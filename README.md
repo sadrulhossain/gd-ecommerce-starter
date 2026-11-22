@@ -68,6 +68,7 @@ keeps MariaDB private and restarts everything on failure. Steps: [docs/DEPLOY.md
 
 | File | Read it for |
 |------|-------------|
+| [docs/OVERVIEW.md](docs/OVERVIEW.md) | what the product is, what a client gets, the website pages and admin modules |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | VPS setup, TLS, first deploy, backups, restore |
 | [docs/CUSTOMIZE.md](docs/CUSTOMIZE.md) | brand colours, a second language, new modules and sections |
 | [docs/UPGRADE.md](docs/UPGRADE.md) | updating a running site, rollback |
