@@ -70,3 +70,12 @@ Sign-out: `POST /v1/logout` revokes the access and refresh tokens, then the brow
 returns to `/signed-out`. Modules are config (`web/admin/src/modules.ts` -> `CrudPage`). Gaps: the sidebar has no icons; menu rows whose screen is
 not built yet (posts, messages, settings) land on the 404 page. Browser tests run in the `e2e` compose service (official Playwright image,
 profile `e2e`), not in the node container: Alpine's Chromium would not install reliably here.
+
+## 012 - Ecommerce starter base, PostgreSQL 18.6 and Redis 8.10.3
+2026-11-22. Phase E0. The kit starts from the template's `main` at commit `3eade4d9a84283c96255ab7d7fc31b15d5c7f644` (the polished branch,
+not v1.0.0). Decision 010 is reversed: PostgreSQL 18.6 replaces MariaDB (Laravel `pgsql` driver, `pdo_pgsql`) and Redis 8.10.3 returns for
+cache, queue, sessions, carts, captcha challenges and throttles. Redis runs with the `default` user off and one `app` user that may run
+everything except `@dangerous` (FLUSHDB re-allowed), RESTORE, DEBUG, MODULE and CONFIG; the ACL file is written from `REDIS_PASSWORD` at start
+by `docker/redis/start.sh`. Client: phpredis 6.3.0 (PECL) in the php image. The queue worker and scheduler are their own containers built from
+the same image. The test database is `<DB_DATABASE>_testing`, created by `scripts/ensure-test-db.sh`. The site is English only: `LOCALE_SUPPORTED=en`,
+no second language is enabled. Host ports moved to the 30xxx block because the 28xxx/29xxx blocks are used by sibling stacks on the same machine.

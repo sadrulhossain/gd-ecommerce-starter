@@ -10,7 +10,8 @@ Dependencies not listed here must not be added (CLAUDE.md rule 2).
 | Node.js 24 LTS "Krypton" | 24.22.3 | 24.22.3 | https://nodejs.org/en/blog/vulnerability/november-2026-security-releases | 2026-11-11 | `node:24.22.3-alpine` exists (pulled 2026-11-12) |
 | Next.js | 16.4.6 | 16.4.6 | https://github.com/vercel/next.js/releases/tag/v16.4.6 | 2026-11-12 | n/a |
 | nginx | 1.30.6 | 1.30.6 | https://nginx.org/en/CHANGES-1.30 | 2026-11-11 | `nginx:1.30.6-alpine` exists |
-| MariaDB (LTS) | 11.8.9 | 11.8.9 | https://hub.docker.com/_/mariadb/tags?name=11.8.9 | 2026-11-12 | `mariadb:11.8.9` exists |
+| PostgreSQL | 18.6 | 18.6 | https://www.postgresql.org/docs/release/18.6/ | 2026-11-22 | `postgres:18.6-alpine` exists |
+| Redis | 8.10.3 | 8.10.3 | https://github.com/redis/redis/releases/tag/8.10.3 | 2026-11-22 | `redis:8.10.3-alpine` exists |
 | Mailpit | v1.33.1 | v1.33.1 | https://github.com/axllent/mailpit/releases/tag/v1.33.1 | 2026-11-12 | `axllent/mailpit:v1.33.1` exists |
 | Vite | 8.3.8 | 8.3.8 | https://www.npmjs.com/package/vite/v/8.3.8 | 2026-11-12 | n/a (npm) |
 | React / React DOM | 19.3.1 | 19.3.1 | https://www.npmjs.com/package/react/v/19.3.1 | 2026-11-12 | n/a (npm) |
@@ -43,6 +44,7 @@ Dependencies not listed here must not be added (CLAUDE.md rule 2).
 - Trivy: `aquasec/trivy:latest` via `docker run`, HIGH and CRITICAL image scans (docs/SECURITY.md). Lighthouse 13.6.0 via `npx` in the Playwright container. Neither is installed in the repo.
 
 ## Notes
+- E0 (ecommerce starter): MariaDB 11.8.9 replaced by PostgreSQL 18.6 and Redis 8.10.3 added (phpredis, see DECISIONS.md). Re-check for PostgreSQL 18.7 before release.
 - Node: the 11 Nov 2026 official security release patches 24.x at **v24.22.3** (fixes 16 CVEs, highest severity High; 26.x -> v26.13.1, 22.x -> v22.23.5). v24.22.3 is on nodejs.org/dist (dated 2026-11-10), but the official Docker image has only 24.22.2 so far. Until `node:24.22.3-*` appears, do not build images from `node:24.22.2` as the pin; recheck the tag.
 - Next.js: bumped from 16.4.5 to 16.4.6 on 2026-11-12 (user decision).
 - Laravel: 13.29.0 is the floor; Composer constraint `^13.29` resolves to latest 13.x.
