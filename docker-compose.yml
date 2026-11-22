@@ -107,7 +107,7 @@ services:
       retries: 60
       start_period: 120s
 
-  # Browser tests (make e2e). Not started by `make up`; same code and node_modules as the node service.
+  # Browser tests (see README). Not started by `docker compose up`; same code and node_modules as the node service.
   e2e:
     image: mcr.microsoft.com/playwright:v1.65.0-noble
     profiles: ["e2e"]

@@ -1,6 +1,6 @@
 # Customize
 
-Everything here is a code change in your fork, then `make check`. Content (texts, images, services, posts, hours, section visibility) is edited in the admin, not in code.
+Everything here is a code change in your fork, then the README checks (Pest, Pint, Larastan, security gates). Content (texts, images, services, posts, hours, section visibility) is edited in the admin, not in code.
 
 ## Brand colours and fonts
 
@@ -47,7 +47,7 @@ Follow [PATTERNS.md](PATTERNS.md) literally; it is the contract. The shortest pa
 1. API, in the order of "New module checklist": migration and model, policy, FormRequests, Resource, controller, routes inside the `auth:api` group, `<Module>ModuleSeeder` (permissions `<module>.view|create|update|delete`, a menu row, role grants) added to `DatabaseSeeder`, tests.
 2. `php artisan security:routes` must still pass: every new route needs a `can:` middleware or a policy/Gate call.
 3. Public reads (if the portal shows it): a `publicIndex` in the controller, a route in the `public/*` group, and add the model to the webhook list in `AppServiceProvider::boot()` so editing it refreshes the portal.
-4. `make openapi` then `pnpm generate:types`, commit `packages/api-types`.
+4. re-export the OpenAPI spec (README, daily commands), then `pnpm generate:types`, commit `packages/api-types`.
 5. Admin: one entry in `web/admin/src/modules.ts` (see "Admin module" in PATTERNS.md). Plain CRUD needs no page component.
 6. Portal: a fetch function in `web/portal/lib/api.ts` (tag it with the table name), then a component or page (see "Portal" and "Portal pages").
 7. Add the new route to `web/portal/app/sitemap.ts` if it is a public page, and keep `a11y.spec.ts` green.
@@ -62,4 +62,4 @@ Sections are the blocks of the home page (hero, about, services, contact, ...). 
    If it lists data (like services), fetch it in `lib/api.ts` and pass it in.
 3. Optional own page (`/about`, `/services`, ...): add the key to `SECTION_PAGES` in `web/portal/lib/section-page.tsx` and create `app/[locale]/<key>/page.tsx` containing `export default sectionPage('<key>')` (copy `about/page.tsx`); add it to the sitemap's paths if it needs more than the default. The header then links to the page instead of a home anchor.
 4. Add the section title to the messages if it needs a fixed label, in both message files.
-5. Run the axe spec and `make check`.
+5. Run the axe spec and the README checks.

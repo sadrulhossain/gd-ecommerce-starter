@@ -36,7 +36,7 @@ The single source of truth is [VERSIONS.md](VERSIONS.md): a **pin** (what we bui
 1. Look up the new version and its advisories (links are in the table). Never go below a floor.
 2. Change the pin in `docs/VERSIONS.md` (with source and date), then in `.env.example`, `.env.prod.example` (and your `.env` / `.env.prod`) for images, or in `composer.json` / `package.json` / `pnpm-workspace.yaml` for packages. Pins in package files are exact, no ranges.
 3. `docker compose exec php composer update <package>` or `pnpm up <package>@<version>`; commit the lock file.
-4. `make check` (includes `make versions`, `make security`, composer audit) and the Playwright suites. Fix what breaks before merging.
+4. The README checks (Pest, Pint, Larastan, composer audit, security gates) and the Playwright suites. Fix what breaks before merging.
 5. Deploy as above. Image pins (PHP, Node, nginx, MariaDB) rebuild or pull new images on `up -d --build`.
 
 Notes per component:

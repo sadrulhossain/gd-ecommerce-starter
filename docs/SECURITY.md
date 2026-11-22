@@ -3,7 +3,7 @@
 Reviewed 2026-11-13 on branch `feature/phase-15-security-a11y-perf`. Status: **fixed** = changed in this phase, **accepted** = documented risk,
 **open** = needs a decision or an action outside this repo.
 
-Run the gates any time: `make security` (route audit, secrets, version floors). `make check` includes them.
+Run the gates any time: `php artisan security:routes` (php container), `sh scripts/check-secrets.sh`, `node scripts/check-floors.mjs`.
 
 ## Findings
 
@@ -23,7 +23,7 @@ Run the gates any time: `make security` (route audit, secrets, version floors). 
 | 12 | PHP hardening | The PHP2Shell RCE fixes ship in 8.5.12 (already the pin). Workarounds `session.upload_progress.enabled=0` and `fatal_error_backtraces=0` applied as defence in depth | - | fixed | `docker/php/security.ini` |
 | 13 | Showcase page | `/<locale>/showcase` (design-token preview) was public | Low | fixed: 404 in production builds | `showcase/page.tsx` |
 | 14 | Webhook | `/api/revalidate`: HMAC-SHA256 over `timestamp.body`, 5 minute window, constant-time compare, 503 without a secret | - | verified (existing `RevalidateWebhookTest`) | - |
-| 15 | Placeholder secrets | `PORTAL_REVALIDATE_SECRET` and `MARIADB_*` ship as `change-me` | Medium | accepted with a gate: `make security` fails when `APP_ENV=production` and `.env` still has `change-me` | `check-secrets.sh` |
+| 15 | Placeholder secrets | `PORTAL_REVALIDATE_SECRET` and `MARIADB_*` ship as `change-me` | Medium | accepted with a gate: `scripts/check-secrets.sh` fails when `APP_ENV=production` and `.env` still has `change-me` | `check-secrets.sh` |
 | 16 | Tokens | Access token 1 h, refresh 30 d, password grant refused, PKCE required, memory-only tokens in the SPA, logout revokes both | - | verified (existing tests) | `OauthPkceTest` |
 | 17 | Test isolation | `BilingualTest` assumed `LOCALE_SUPPORTED=en` and failed once the dev `.env` enabled a second language | Low | fixed: `tests/bootstrap.php` pins it | `tests/bootstrap.php` |
 

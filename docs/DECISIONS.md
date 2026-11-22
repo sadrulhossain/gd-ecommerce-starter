@@ -49,9 +49,8 @@ workspace `catalog:` so react/react-dom/tailwindcss/typescript resolve once. pnp
 TypeScript/CSS source (no build step): Next and Vite compile them. `@gd/tokens` is Tailwind 4 `@theme` CSS, one file per app
 (`admin.css`, `portal.css`, both on `base.css`); each theme resets `--color-*` so only its own palette exists. `@gd/api-types` is
 generated from `packages/api-types/openapi.json` (`pnpm generate:types`, committed output). `@gd/api-client` is a dependency-free typed
-fetch: Scramble documents updates as PUT while the API takes PATCH, so `patch` reuses the `put` types. Re-export the spec with `make
-openapi` after migrating the dev DB (Scramble reads column types from it; without migrations every field degrades to `string`).
-The node container mounts the repo at /app with named volumes over every node_modules; `make web` installs, regenerates types,
+fetch: Scramble documents updates as PUT while the API takes PATCH, so `patch` reuses the `put` types. Re-export the spec with `php artisan scramble:export` (php container) after migrating the dev DB (Scramble reads column types from it; without migrations every field degrades to `string`).
+The node container mounts the repo at /app with named volumes over every node_modules; `docker compose run --rm --no-deps -T -e NODE_ENV=production node sh -c 'cd /app && corepack enable && pnpm install --frozen-lockfile && pnpm generate:types && pnpm -r --if-present typecheck && pnpm -r --if-present build'` installs, regenerates types,
 typechecks and builds both apps with NODE_ENV=production (Next prerender breaks under NODE_ENV=development).
 ## 010 - MariaDB, no Redis
 2026-11-12. PostgreSQL is replaced by MariaDB 11.8.9 (LTS) using Laravel's `mariadb` driver and the `pdo_mysql` extension. Redis and phpredis are

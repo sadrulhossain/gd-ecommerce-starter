@@ -8,18 +8,17 @@
 - `docker/` — Dockerfiles and compose config
 - `docs/` — PHASES.md, VERSIONS.md, ENV.md, DECISIONS.md, PATTERNS.md
 
-## Make commands
-- `make up` / `make down` — start (builds, waits for healthy) / stop the stack
-- `make ports` — check host ports from .env are free or ours
-- `make versions` — check .env *_VERSION pins against docs/VERSIONS.md
-- `make t FILTER=...` — targeted Pest tests inside the php container
-- `make check` — compose config, script syntax, nginx -t, Pint, Larastan, Pest, composer audit, version pins (run once, at the end of a phase; needs the stack up)
+## Commands (docker compose directly, not make)
+- `docker compose up -d --build --wait` / `docker compose down --remove-orphans` — start / stop the stack
+- `sh scripts/check-ports.sh` — check host ports from .env are free or ours
+- `docker compose exec -T php vendor/bin/pest --compact --filter=...` — targeted Pest tests
+- Final check (once, at the end of a phase; needs the stack up): `docker compose config -q`, `sh -n` on scripts, `docker compose exec -T nginx nginx -t`, then in php: `vendor/bin/pint --test`, `vendor/bin/phpstan analyse --memory-limit=1G --no-progress`, `vendor/bin/pest --compact`, `composer audit`, `php artisan security:routes`; plus `sh scripts/check-secrets.sh`, `node scripts/check-floors.mjs`
 
 ## Rules
 1) One phase at a time; read only CLAUDE.md, the phase row and files it names.
 2) No repo-wide exploring, no unrelated refactors, no dependency not in VERSIONS.md.
 3) Reuse the reference patterns in docs/PATTERNS.md; do not invent new ones.
-4) While working run only targeted tests (make t FILTER=...); run make check once at the end.
+4) While working run only targeted tests (pest --filter=...); run the final check once at the end.
 5) Keep command output short (quiet flags, | tail -n 20). Never paste logs back.
 6) No screenshots unless the phase says so.
 7) Finish: tick the phase, git commit "phase N: title", reply in 8 lines or fewer

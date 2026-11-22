@@ -41,13 +41,13 @@ singleton reference: Settings. Paths below are relative to `api/app` unless note
   `AppServiceProvider`, queued Notification to `Notification::route('mail', ...)`. Answer with `{"data":{"received":true}}`.
 - Content-change webhook: add the model to the list in `AppServiceProvider::boot()` (it gets `ContentObserver`); tag = table name.
   Not for private data (contact messages). Tests use `Http::fake()` per test.
-- OpenAPI: `make openapi` exports Scramble's spec to `packages/api-types/openapi.json`; commit it when routes change.
+- OpenAPI: `php artisan scramble:export --path=storage/openapi.json` (php container) exports Scramble's spec to `packages/api-types/openapi.json`; commit it when routes change.
 
 ## Frontend (phase 7)
 - Theme: import `tailwindcss` then `@gd/tokens/<app>.css` in the app's one CSS file. Use token utilities (`bg-primary-600`, `text-ink`,
   `border-line`, `font-display`), never raw hex. New tokens go in packages/tokens, not in an app.
 - Data: type API data with `components['schemas'][...]` from `@gd/api-types`; call the API with `@gd/api-client` (`createClient`), never raw fetch.
-- Regenerate after API changes: `make openapi` (migrated DB), then `pnpm generate:types`; commit both outputs.
+- Regenerate after API changes: `scramble:export` (migrated DB), then `pnpm generate:types`; commit both outputs.
 - Tailwind only sees literal class names: map values to full class strings, do not build them with template pieces.
 
 ## Admin module (phase 8)
@@ -109,7 +109,7 @@ singleton reference: Settings. Paths below are relative to `api/app` unless note
 - Smoke tests: `web/portal/e2e/smoke.spec.ts` (`docker compose --profile e2e run --rm --no-deps -T -w /app/web/portal e2e npx playwright test smoke`). The contact test leaves one message with subject `e2e-smoke`; the blog test skips without published posts.
 
 ## Security and quality gates (phase 15)
-- `make security` (also part of `make check`): `php artisan security:routes` (every `auth:api` route needs `can:` or a policy/Gate call; own-account routes are listed in `AuditRoutes::ALLOWED`), `scripts/check-secrets.sh`, `scripts/check-floors.mjs`. A new route gets its check; do not add allowlist entries.
+- Security gates: `php artisan security:routes` (every `auth:api` route needs `can:` or a policy/Gate call; own-account routes are listed in `AuditRoutes::ALLOWED`), `scripts/check-secrets.sh`, `scripts/check-floors.mjs`. A new route gets its check; do not add allowlist entries.
 - nginx: `include /etc/nginx/snippets/security-headers.conf;` in every server and in every location that sets its own `add_header` (those replace inherited ones). Set the CSP per vhost.
 - The OAuth authorize step is S256-only (`RequirePkceS256`). Cross-origin API access is closed; list origins in `CORS_ALLOWED_ORIGINS` only when a browser app needs it.
 - Portal: never read `headers()` or `cookies()` in the locale layout, `not-found.tsx` or shared components (every page turns dynamic and loses ISR). `web/portal/e2e/a11y.spec.ts` (axe) must stay at zero violations; white text needs `bg-brand-700` or darker.
