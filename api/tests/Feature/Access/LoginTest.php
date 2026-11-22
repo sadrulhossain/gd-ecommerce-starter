@@ -39,10 +39,10 @@ it('throttles repeated login attempts', function () {
 });
 
 it('ends the browser session and returns to the admin signed-out page', function () {
-    config(['access.oauth_admin_client.redirect_uri' => 'http://admin.example.test:28080/auth/callback']);
+    config(['access.oauth_admin_client.redirect_uri' => 'http://admin.example.test:30080/auth/callback']);
     $this->actingAs(User::factory()->create(), 'web');
 
-    $this->get('/logout')->assertRedirect('http://admin.example.test:28080/signed-out');
+    $this->get('/logout')->assertRedirect('http://admin.example.test:30080/signed-out');
 
     expect(Auth::guard('web')->check())->toBeFalse();
 });

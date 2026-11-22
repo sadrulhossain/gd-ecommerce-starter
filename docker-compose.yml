@@ -23,15 +23,20 @@ x-php: &php
     - LOCALE_FALLBACK=${LOCALE_FALLBACK}
     - LOCALE_SUPPORTED=${LOCALE_SUPPORTED}
     - LOG_CHANNEL=stderr
-    - CACHE_STORE=database
-    - SESSION_DRIVER=database
-    - QUEUE_CONNECTION=database
-    - DB_CONNECTION=mariadb
-    - DB_HOST=mariadb
-    - DB_PORT=3306
-    - DB_DATABASE=${MARIADB_DATABASE}
-    - DB_USERNAME=${MARIADB_USER}
-    - DB_PASSWORD=${MARIADB_PASSWORD}
+    - CACHE_STORE=redis
+    - SESSION_DRIVER=redis
+    - QUEUE_CONNECTION=redis
+    - REDIS_CLIENT=phpredis
+    - REDIS_HOST=redis
+    - REDIS_PORT=6379
+    - REDIS_USERNAME=app
+    - REDIS_PASSWORD=${REDIS_PASSWORD}
+    - DB_CONNECTION=pgsql
+    - DB_HOST=postgres
+    - DB_PORT=5432
+    - DB_DATABASE=${DB_DATABASE}
+    - DB_USERNAME=${DB_USERNAME}
+    - DB_PASSWORD=${DB_PASSWORD}
     - MAIL_HOST=mailpit
     - MAIL_PORT=1025
     - UPLOADS_CONTAINER_PATH=${UPLOADS_CONTAINER_PATH}
@@ -51,7 +56,8 @@ services:
       timeout: 3s
       retries: 5
     depends_on:
-      mariadb: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
 
   php-queue:
     <<: *php
@@ -59,7 +65,8 @@ services:
     user: www-data
     command: ["artisan-or-idle.sh", "queue:work", "--sleep=3", "--tries=3"]
     depends_on:
-      mariadb: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
 
   php-scheduler:
     <<: *php
@@ -67,7 +74,8 @@ services:
     user: www-data
     command: ["artisan-or-idle.sh", "schedule:work"]
     depends_on:
-      mariadb: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
 
   node:
     image: node:${NODE_VERSION}-alpine
@@ -155,21 +163,38 @@ services:
       - php
       - node
 
-  mariadb:
-    image: mariadb:${MARIADB_VERSION}
-    container_name: ${COMPOSE_PROJECT_NAME}-mariadb
+  postgres:
+    image: postgres:${POSTGRES_VERSION}-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}-postgres
     restart: unless-stopped
     environment:
-      - MARIADB_DATABASE=${MARIADB_DATABASE}
-      - MARIADB_USER=${MARIADB_USER}
-      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
-      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
-      - "127.0.0.1:${MARIADB_PORT}:3306"
+      - "127.0.0.1:${DB_PORT}:5432"
     volumes:
-      - mariadb-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:${REDIS_VERSION}-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}-redis
+    restart: unless-stopped
+    command: ["sh", "/start.sh"]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "127.0.0.1:${REDIS_PORT}:6379"
+    volumes:
+      - ./docker/redis/start.sh:/start.sh:ro
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --user app --pass \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -189,7 +214,8 @@ services:
       retries: 5
 
 volumes:
-  mariadb-data:
+  postgres-data:
+  redis-data:
   root-node-modules:
   admin-node-modules:
   portal-node-modules:

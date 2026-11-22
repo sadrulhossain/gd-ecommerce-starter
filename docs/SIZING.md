@@ -8,7 +8,7 @@ Measured 2026-11-13 with `docker stats` and `/proc/<pid>/status` (VmHWM) in a Do
 | php-fpm (5 workers) and app | 48 MiB | 51 MiB |
 | php queue worker | 28 MiB | - |
 | php scheduler | 41 MiB | - |
-| MariaDB 11.8 (128 MiB buffer pool, the default) | 94 MiB | 96 MiB |
+| PostgreSQL 18.6 and Redis 8.10.3 | not measured | not measured |
 | nginx | 10 MiB | 10 MiB |
 | **Total containers** | **about 340 MiB** | **about 365 MiB** |
 
