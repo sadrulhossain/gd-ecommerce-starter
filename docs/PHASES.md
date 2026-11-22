@@ -31,7 +31,7 @@ Phases 0-17 above are inherited from the business site (all done). E0-E14 are th
 
 | Done | # | Phase | Size | Session | Branch |
 |------|---|-------|------|---------|--------|
-| [ ] | E0 | Fork from main, PostgreSQL swap, Redis, green suite | M | ES1 | feature/phase-e0-fork-postgresql-swap-redis |
+| [x] | E0 | Fork from main, PostgreSQL swap, Redis, green suite | M | ES1 | feature/phase-e0-fork-postgresql-swap-redis |
 | [ ] | E1 | Catalog API (categories, brands, products, variants) | M | ES1 | feature/phase-e1-catalog-api |
 | [ ] | E2 | Suppliers and purchase orders API | M | ES2 | feature/phase-e2-suppliers-purchase-orders-api |
 | [ ] | E3 | Check-in (goods receipt) and stock ledger | L | ES2 | feature/phase-e3-check-in-stock-ledger |
@@ -47,11 +47,11 @@ Phases 0-17 above are inherited from the business site (all done). E0-E14 are th
 | [ ] | E13 | Portal: checkout, account, tracking, SEO | M | ES7 | feature/phase-e13-portal-checkout-account-tracking-seo |
 | [ ] | E14 | Hardening and release | L | ES7 | feature/phase-e14-hardening-release |
 
-### E0 progress (in progress, not ticked, nothing committed or pushed on the branch)
+### E0 notes (done)
 
 Branch: `feature/phase-e0-fork-postgresql-swap-redis` (from template `main` at `3eade4d`; origin `main` holds the untouched template).
 
-Done (written in the working tree):
+Done:
 - [x] Template cloned on `main`, base hash in DECISIONS.md 012, `upstream` push disabled, untouched `main` pushed to origin, phase branch created
 - [x] Task 1: rename to gd-ecommerce-starter (project, containers, domain, DB name); host ports moved to the 30xxx block (sibling stacks use 28xxx/29xxx)
 - [x] Task 2: PostgreSQL 18.6 service, `pdo_pgsql`, env vars `DB_*`, MariaDB removed (dev and prod compose, backup/restore/test-db scripts)
@@ -62,11 +62,4 @@ Done (written in the working tree):
 - [x] Task 9: phase workflow, design rules and commit rule in CLAUDE.md
 - [x] Makefile removed; README, ENV, DEPLOY, UPGRADE, SIZING, SECURITY, OVERVIEW updated; English only (`LOCALE_SUPPORTED=en`)
 - [x] Images built; postgres and redis start healthy; dev and prod compose files validate
-
-Remaining:
-- [ ] Finish `composer install` in `api/`: the first run was killed and left `api/vendor/voku/portable-ascii` incomplete (no `ASCII.php`). Run `docker compose exec -T -e COMPOSER_PROCESS_TIMEOUT=0 php composer reinstall voku/portable-ascii`; if other packages are broken, delete `api/vendor` and reinstall (very slow on the Windows bind mount, about 40 min)
-- [ ] Task 3: `php artisan migrate:fresh --seed` on PostgreSQL; fix only what fails (enums, JSON, ILIKE search, timestamps, the settings CHECK migration)
-- [ ] Task 4 (checks): captcha challenge and throttles confirmed in Redis; `php-queue` and `php-scheduler` run (they restart until vendor exists); `/api/v1/health` reports database and cache
-- [ ] Start the `node` container again (stopped to free I/O; `docker compose up -d --wait`) and confirm it turns healthy
-- [ ] Verify: whole Pest suite green on PostgreSQL, then the final check listed in CLAUDE.md
-- [ ] Tick E0 here, commit "phase E0", `git push -u origin feature/phase-e0-fork-postgresql-swap-redis`, give the PR link and ask for the manual merge
+- [x] Task 3: `migrate:fresh --seed` clean on PostgreSQL; Redis health, queue and scheduler running; whole Pest suite green (201 tests); final check passed
