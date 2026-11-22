@@ -134,3 +134,12 @@ singleton reference: Settings. Paths below are relative to `api/app` unless note
 - Images: `product_images` rows via `POST products/{id}/images` (first one is primary), `PATCH|DELETE product-images/{id}`, `PUT products/{id}/images/reorder`; categories and brands use the single-image endpoint pattern.
 - Sample data: `Site/SiteCatalogSeeder` (manual, like the other `Site*Seeder`s).
 - Tests: `tests/Feature/Catalog`; `catalogProduct()` and `assertInvalidFields()` are in `tests/Pest.php` (validation errors live under `error.details`).
+
+## Purchasing (E2)
+- Permissions: `suppliers.*`; `purchase-orders.view|create|update|delete|order|cancel`. Lines are part of the order and use `purchase-orders.update`. Admin only, no public routes, no content webhook (private data).
+- Draft, then posted: a draft purchase order is editable; `POST purchase-orders/{id}/order` posts it and it is immutable afterwards (every write returns 422 on `status` via `PurchaseOrder::assertDraft()`). Fix a posted order by cancelling it and creating a new one. Only a draft can be deleted; only an `ordered` order with nothing received can be cancelled.
+- `partially_received` / `received` and `lines.quantity_received` are written only by E3's check-in (through `StockService` flows), never by the purchasing endpoints.
+- Numbers come from the Postgres sequence `purchase_order_number_seq` (`PO-000001`); the migration uses `IF NOT EXISTS` because `migrate:fresh` does not drop sequences.
+- Money: integer minor units in, `{amount, currency}` out; totals (`subtotal`, `tax_total`, `grand_total`) and line totals are computed only by `Services/PurchaseOrderService` and never accepted from a client. Tax is per line in basis points (100 = 1%), rounded half-up per line; E8 adds the tax module. `unit_cost` defaults to the variant's `cost_price`. Lines snapshot `sku` and `name`.
+- Line endpoints return the whole order because totals change: `POST purchase-orders/{id}/lines`, `PATCH|DELETE purchase-order-lines/{id}`.
+- A supplier with purchase orders can be deactivated, not deleted (422). Tests: `tests/Feature/Purchasing`.

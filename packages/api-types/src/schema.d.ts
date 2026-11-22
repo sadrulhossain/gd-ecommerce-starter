@@ -1110,6 +1110,131 @@ export interface paths {
         patch: operations["productVariant.update"];
         trace?: never;
     };
+    "/v1/purchase-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List purchase orders
+         * @description Newest first, 20 per page, without lines. Filters: `status`, `supplier_id`, `q` (number or supplier name),
+         *     `from` and `to` (dates, on the creation day).
+         */
+        get: operations["purchase-orders.index"];
+        put?: never;
+        /**
+         * Create a purchase order
+         * @description A draft with the next `PO-` number, optionally with `lines` (`variant_id`, `quantity_ordered`, optional `unit_cost`
+         *     in minor units, defaulting to the variant's cost price, and `tax_rate_bp` in basis points). Totals are computed
+         *     server-side.
+         */
+        post: operations["purchase-orders.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchase-orders/{purchaseOrder}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a purchase order with its lines */
+        get: operations["purchase-orders.show"];
+        /** Update the header of a draft purchase order (`supplier_id`, `expected_at`, `notes`) */
+        put: operations["purchase-orders.update"];
+        post?: never;
+        /** Delete a draft purchase order (ordered and cancelled ones are kept for history) */
+        delete: operations["purchase-orders.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchase-orders/{purchaseOrder}/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Order a draft purchase order
+         * @description Posts it: it needs at least one line and an active supplier, and is immutable afterwards.
+         *     Correct a mistake by cancelling it and creating a new one.
+         */
+        post: operations["purchaseOrder.order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchase-orders/{purchaseOrder}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel an ordered purchase order
+         * @description Only while nothing has been received (422 otherwise).
+         */
+        post: operations["purchaseOrder.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchase-orders/{purchaseOrder}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a line to a draft purchase order
+         * @description `unit_cost` (minor units) defaults to the variant's cost price; one line per variant.
+         */
+        post: operations["purchaseOrderLine.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchase-order-lines/{line}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a line from a draft purchase order */
+        delete: operations["purchaseOrderLine.destroy"];
+        options?: never;
+        head?: never;
+        /** Change the quantity, unit cost or tax rate of a line on a draft purchase order */
+        patch: operations["purchaseOrderLine.update"];
+        trace?: never;
+    };
     "/v1/roles": {
         parameters: {
             query?: never;
@@ -1532,6 +1657,49 @@ export interface paths {
         post: operations["settingImage.storeFavicon"];
         /** Remove the favicon */
         delete: operations["settingImage.destroyFavicon"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List suppliers
+         * @description By name, 20 per page. Filters: `q` (name, code or email), `is_active` (true or false).
+         */
+        get: operations["suppliers.index"];
+        put?: never;
+        /** Create a supplier */
+        post: operations["suppliers.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/suppliers/{supplier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a supplier */
+        get: operations["suppliers.show"];
+        /** Update a supplier (set `is_active` false to retire one that has purchase orders) */
+        put: operations["suppliers.update"];
+        post?: never;
+        /**
+         * Delete a supplier
+         * @description Refused (422) once it has purchase orders; deactivate it instead.
+         */
+        delete: operations["suppliers.destroy"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1972,6 +2140,59 @@ export interface components {
             }[];
             images?: components["schemas"]["ProductImageResource"][];
         };
+        /** PurchaseOrderLineResource */
+        PurchaseOrderLineResource: {
+            id: number;
+            variant_id: number;
+            sku: string;
+            name: string;
+            quantity_ordered: number;
+            quantity_received: number;
+            unit_cost: {
+                amount: number;
+                currency: string;
+            };
+            tax_rate_bp: number;
+            line_total: {
+                amount: number;
+                currency: string;
+            };
+            tax_amount: {
+                amount: number;
+                currency: string;
+            };
+        };
+        /** PurchaseOrderResource */
+        PurchaseOrderResource: {
+            id: number;
+            number: string;
+            supplier_id: number;
+            supplier?: components["schemas"]["SupplierResource"];
+            status: string;
+            expected_at: string | null;
+            notes: string | null;
+            subtotal: {
+                amount: number;
+                currency: string;
+            };
+            tax_total: {
+                amount: number;
+                currency: string;
+            };
+            grand_total: {
+                amount: number;
+                currency: string;
+            };
+            /** Format: date-time */
+            ordered_at: string | null;
+            /** Format: date-time */
+            cancelled_at: string | null;
+            lines?: components["schemas"]["PurchaseOrderLineResource"][];
+            /** Format: date-time */
+            created_at: string | null;
+            /** Format: date-time */
+            updated_at: string | null;
+        };
         /** ReorderMenusRequest */
         ReorderMenusRequest: {
             ids: number[];
@@ -2215,6 +2436,19 @@ export interface components {
             is_active?: boolean;
             sort_order?: number;
         };
+        /** StorePurchaseOrderRequest */
+        StorePurchaseOrderRequest: {
+            supplier_id: number;
+            /** Format: date */
+            expected_at?: string | null;
+            notes?: string | null;
+            lines?: {
+                quantity_ordered: number;
+                unit_cost?: number | null;
+                tax_rate_bp?: number;
+                variant_id: number;
+            }[];
+        };
         /** StoreRoleRequest */
         StoreRoleRequest: {
             name: string;
@@ -2264,6 +2498,20 @@ export interface components {
              */
             image: string;
         };
+        /** StoreSupplierRequest */
+        StoreSupplierRequest: {
+            name: string;
+            code: string;
+            contact_name?: string | null;
+            /** Format: email */
+            email?: string | null;
+            phone?: string | null;
+            address?: string | null;
+            tax_number?: string | null;
+            payment_terms?: string | null;
+            notes?: string | null;
+            is_active?: boolean;
+        };
         /** StoreTeamMemberImageRequest */
         StoreTeamMemberImageRequest: {
             /**
@@ -2307,6 +2555,24 @@ export interface components {
             email: string;
             password: string;
             roles?: string[];
+        };
+        /** SupplierResource */
+        SupplierResource: {
+            id: number;
+            name: string;
+            code: string;
+            contact_name: string | null;
+            email: string | null;
+            phone: string | null;
+            address: string | null;
+            tax_number: string | null;
+            payment_terms: string | null;
+            notes: string | null;
+            is_active: boolean;
+            /** Format: date-time */
+            created_at: string | null;
+            /** Format: date-time */
+            updated_at: string | null;
         };
         /** TeamMemberResource */
         TeamMemberResource: {
@@ -2461,6 +2727,22 @@ export interface components {
             password?: string;
             password_confirmation?: string;
         };
+        /** UpdatePurchaseOrderLineRequest */
+        UpdatePurchaseOrderLineRequest: {
+            quantity_ordered?: number;
+            unit_cost?: number;
+            tax_rate_bp?: number;
+        };
+        /**
+         * UpdatePurchaseOrderRequest
+         * @description Header fields of a draft order; lines have their own endpoints.
+         */
+        UpdatePurchaseOrderRequest: {
+            supplier_id?: number;
+            /** Format: date */
+            expected_at?: string | null;
+            notes?: string | null;
+        };
         /** UpdateRoleRequest */
         UpdateRoleRequest: {
             name?: string;
@@ -2525,6 +2807,20 @@ export interface components {
                 /** Format: uri */
                 whatsapp?: string | null;
             };
+        };
+        /** UpdateSupplierRequest */
+        UpdateSupplierRequest: {
+            name?: string;
+            code?: string;
+            contact_name?: string | null;
+            /** Format: email */
+            email?: string | null;
+            phone?: string | null;
+            address?: string | null;
+            tax_number?: string | null;
+            payment_terms?: string | null;
+            notes?: string | null;
+            is_active?: boolean;
         };
         /** UpdateTeamMemberRequest */
         UpdateTeamMemberRequest: {
@@ -5167,6 +5463,323 @@ export interface operations {
             422: components["responses"]["ValidationException"];
         };
     };
+    "purchase-orders.index": {
+        parameters: {
+            query?: {
+                status?: string;
+                supplier_id?: string;
+                q?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["PurchaseOrderResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "purchase-orders.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StorePurchaseOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "purchase-orders.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The purchase order ID */
+                purchaseOrder: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "purchase-orders.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The purchase order ID */
+                purchaseOrder: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdatePurchaseOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "purchase-orders.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The purchase order ID */
+                purchaseOrder: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "purchaseOrder.order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The purchase order ID */
+                purchaseOrder: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "purchaseOrder.cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The purchase order ID */
+                purchaseOrder: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "purchaseOrderLine.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The purchase order ID */
+                purchaseOrder: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "purchaseOrderLine.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The line ID */
+                line: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "purchaseOrderLine.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The line ID */
+                line: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdatePurchaseOrderLineRequest"];
+            };
+        };
+        responses: {
+            /** @description `PurchaseOrderResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PurchaseOrderResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
     "roles.index": {
         parameters: {
             query?: never;
@@ -6141,6 +6754,172 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "suppliers.index": {
+        parameters: {
+            query?: {
+                q?: string;
+                is_active?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `SupplierResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "suppliers.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreSupplierRequest"];
+            };
+        };
+        responses: {
+            /** @description `SupplierResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "suppliers.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The supplier ID */
+                supplier: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `SupplierResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "suppliers.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The supplier ID */
+                supplier: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateSupplierRequest"];
+            };
+        };
+        responses: {
+            /** @description `SupplierResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SupplierResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "suppliers.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The supplier ID */
+                supplier: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
         };
     };
     "teamMember.publicIndex": {
