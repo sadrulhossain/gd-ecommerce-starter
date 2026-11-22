@@ -2,12 +2,17 @@
 
 namespace App\Providers;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Faq;
 use App\Models\GalleryItem;
 use App\Models\OAuthClient;
 use App\Models\Post;
 use App\Models\Pricing;
+use App\Models\Product;
+use App\Models\ProductCategory;
+use App\Models\ProductImage;
+use App\Models\ProductVariant;
 use App\Models\Section;
 use App\Models\Service;
 use App\Models\Setting;
@@ -49,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         foreach ([
             Category::class, Faq::class, GalleryItem::class, Post::class, Pricing::class, Section::class,
             Service::class, Setting::class, TeamMember::class, Testimonial::class,
+            Brand::class, Product::class, ProductCategory::class, ProductImage::class, ProductVariant::class,
         ] as $model) {
             $model::observe(ContentObserver::class);
         }

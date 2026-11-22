@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\V1\BrandController;
+use App\Http\Controllers\Api\V1\BrandImageController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\ContactMessageController;
@@ -17,6 +19,11 @@ use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\PostImageController;
 use App\Http\Controllers\Api\V1\PricingController;
+use App\Http\Controllers\Api\V1\ProductCategoryController;
+use App\Http\Controllers\Api\V1\ProductCategoryImageController;
+use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\ProductImageController;
+use App\Http\Controllers\Api\V1\ProductVariantController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SectionController;
@@ -52,6 +59,10 @@ Route::prefix('v1')->group(function (): void {
         Route::get('public/categories', [CategoryController::class, 'publicIndex']);
         Route::get('public/posts', [PostController::class, 'publicIndex']);
         Route::get('public/posts/{slug}', [PostController::class, 'publicShow']);
+        Route::get('public/product-categories', [ProductCategoryController::class, 'publicIndex']);
+        Route::get('public/brands', [BrandController::class, 'publicIndex']);
+        Route::get('public/products', [ProductController::class, 'publicIndex']);
+        Route::get('public/products/{slug}', [ProductController::class, 'publicShow']);
     });
 
     // Contact form: captcha first, then the throttled submit.
@@ -117,6 +128,32 @@ Route::prefix('v1')->group(function (): void {
         Route::apiResource('posts', PostController::class);
         Route::post('posts/{post}/image', [PostImageController::class, 'store']);
         Route::delete('posts/{post}/image', [PostImageController::class, 'destroy']);
+
+        // Catalog: categories, brands, products, variants, images
+        Route::put('product-categories/reorder', [ProductCategoryController::class, 'reorder']);
+        Route::apiResource('product-categories', ProductCategoryController::class);
+        Route::post('product-categories/{product_category}/image', [ProductCategoryImageController::class, 'store']);
+        Route::delete('product-categories/{product_category}/image', [ProductCategoryImageController::class, 'destroy']);
+
+        Route::apiResource('brands', BrandController::class);
+        Route::post('brands/{brand}/image', [BrandImageController::class, 'store']);
+        Route::delete('brands/{brand}/image', [BrandImageController::class, 'destroy']);
+
+        Route::apiResource('products', ProductController::class);
+        Route::post('products/{product}/publish', [ProductController::class, 'publish']);
+        Route::post('products/{product}/unpublish', [ProductController::class, 'unpublish']);
+        Route::post('products/{product}/archive', [ProductController::class, 'archive']);
+
+        Route::get('products/{product}/variants', [ProductVariantController::class, 'index']);
+        Route::post('products/{product}/variants', [ProductVariantController::class, 'store']);
+        Route::get('variants/{variant}', [ProductVariantController::class, 'show']);
+        Route::patch('variants/{variant}', [ProductVariantController::class, 'update']);
+        Route::delete('variants/{variant}', [ProductVariantController::class, 'destroy']);
+
+        Route::post('products/{product}/images', [ProductImageController::class, 'store']);
+        Route::put('products/{product}/images/reorder', [ProductImageController::class, 'reorder']);
+        Route::patch('product-images/{image}', [ProductImageController::class, 'update']);
+        Route::delete('product-images/{image}', [ProductImageController::class, 'destroy']);
 
         // Contact inbox (no create/delete)
         Route::apiResource('contact-messages', ContactMessageController::class)
