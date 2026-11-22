@@ -25,6 +25,8 @@ use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\ProductImageController;
 use App\Http\Controllers\Api\V1\ProductVariantController;
 use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\PurchaseOrderController;
+use App\Http\Controllers\Api\V1\PurchaseOrderLineController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SectionController;
 use App\Http\Controllers\Api\V1\SectionImageController;
@@ -33,6 +35,7 @@ use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\ServiceImageController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\SettingImageController;
+use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\TeamMemberController;
 use App\Http\Controllers\Api\V1\TeamMemberImageController;
 use App\Http\Controllers\Api\V1\TestimonialController;
@@ -154,6 +157,15 @@ Route::prefix('v1')->group(function (): void {
         Route::put('products/{product}/images/reorder', [ProductImageController::class, 'reorder']);
         Route::patch('product-images/{image}', [ProductImageController::class, 'update']);
         Route::delete('product-images/{image}', [ProductImageController::class, 'destroy']);
+
+        // Purchasing: suppliers, purchase orders and their draft lines
+        Route::apiResource('suppliers', SupplierController::class);
+        Route::apiResource('purchase-orders', PurchaseOrderController::class);
+        Route::post('purchase-orders/{purchase_order}/order', [PurchaseOrderController::class, 'order']);
+        Route::post('purchase-orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel']);
+        Route::post('purchase-orders/{purchase_order}/lines', [PurchaseOrderLineController::class, 'store']);
+        Route::patch('purchase-order-lines/{line}', [PurchaseOrderLineController::class, 'update']);
+        Route::delete('purchase-order-lines/{line}', [PurchaseOrderLineController::class, 'destroy']);
 
         // Contact inbox (no create/delete)
         Route::apiResource('contact-messages', ContactMessageController::class)

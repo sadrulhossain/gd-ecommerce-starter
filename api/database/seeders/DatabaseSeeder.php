@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             FaqsModuleSeeder::class,
             BlogModuleSeeder::class,
             CatalogModuleSeeder::class,
+            PurchasingModuleSeeder::class,
             ContactModuleSeeder::class,
             SettingsModuleSeeder::class,
             AccessModuleSeeder::class,
