@@ -5,6 +5,7 @@ namespace App\Http\Resources\Api\V1;
 use App\Models\PurchaseOrder;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 /** @mixin PurchaseOrder */
 class PurchaseOrderResource extends JsonResource
@@ -18,7 +19,7 @@ class PurchaseOrderResource extends JsonResource
             'supplier_id' => $this->supplier_id,
             'supplier' => new SupplierResource($this->whenLoaded('supplier')),
             'status' => $this->status,
-            'expected_at' => $this->expected_at?->toDateString(),
+            'expected_at' => $this->expected_at === null ? null : Carbon::parse($this->expected_at)->toDateString(),
             'notes' => $this->notes,
             'subtotal' => ['amount' => $this->subtotal, 'currency' => $this->currency],
             'tax_total' => ['amount' => $this->tax_total, 'currency' => $this->currency],
