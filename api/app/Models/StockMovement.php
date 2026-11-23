@@ -10,6 +10,14 @@ class StockMovement extends Model
 {
     public const RECEIPT = 'receipt';
 
+    public const DAMAGE = 'damage';
+
+    public const RETURN_TO_SUPPLIER = 'return_to_supplier';
+
+    public const ADJUSTMENT = 'adjustment';
+
+    public const COUNT = 'count';
+
     const UPDATED_AT = null;
 
     /** @return array<string, string> */

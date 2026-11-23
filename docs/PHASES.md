@@ -35,7 +35,7 @@ Phases 0-17 above are inherited from the business site (all done). E0-E14 are th
 | [x] | E1 | Catalog API (categories, brands, products, variants) | M | ES1 | feature/phase-e1-catalog-api |
 | [x] | E2 | Suppliers and purchase orders API | M | ES2 | feature/phase-e2-suppliers-purchase-orders-api |
 | [x] | E3 | Check-in (goods receipt) and stock ledger | L | ES2 | feature/phase-e3-check-in-stock-ledger |
-| [ ] | E4 | Damage, returns, adjustments, stock counts API | M | ES3 | feature/phase-e4-damage-returns-adjustments-stock-counts |
+| [x] | E4 | Damage, returns, adjustments, stock counts API | M | ES3 | feature/phase-e4-damage-returns-adjustments-stock-counts |
 | [ ] | E5 | Payment framework: interfaces, registry, COD driver | M | ES3 | feature/phase-e5-payment-framework |
 | [ ] | E6 | Cart, checkout, order lifecycle API | L | ES4 | feature/phase-e6-cart-checkout-orders |
 | [ ] | E7 | Delivery, COD remittance, reconciliation, reports API | M | ES4 | feature/phase-e7-delivery-cod-remittance-reconciliation-reports |

@@ -152,3 +152,11 @@ singleton reference: Settings. Paths below are relative to `api/app` unless note
 - `POST goods-receipts/{id}/post` (`GoodsReceiptService::post`) locks the receipt, order and order lines, re-checks outstanding quantities (two drafts can race), writes the movements, adds to `purchase_order_lines.quantity_received`, and sets the order to `partially_received` or `received`. Posted receipts cannot be changed or deleted (422 on `status`).
 - Numbers come from the sequence `goods_receipt_number_seq` (`GR-000001`); like `purchase_order_number_seq` they are not rolled back by tests, so assert the format, not the value.
 - Tests: `tests/Feature/Inventory`.
+
+## Damage, returns, adjustments, stock counts (E4)
+- One table pair (`stock_documents`, `stock_document_lines`), one `StockDocumentController`, one `StockDocumentPolicy`; the route carries the type (`->defaults('type', ...)` in a loop over `StockDocument::TYPES`). A document reached through the wrong URL is a 404; permissions follow the document's real type.
+- Types, URLs, permissions (`<prefix>.view|create|update|delete|post`) and numbers: damage `/damages` `DM-`, supplier return `/supplier-returns` `SR-`, adjustment `/adjustments` `ADJ-`, stock count `/stock-counts` `SC-`. One sequence `stock_document_number_seq` (not rolled back by tests: assert the format).
+- Draft, then posted, as in E2/E3: `PATCH` with `lines` replaces all lines, `POST <path>/{id}/post` posts. Posted documents cannot be changed or deleted (422 on `status`); correct them with a new document. Drafts never touch stock.
+- Posting (`StockDocumentService::post`) goes only through `StockService`: damage and supplier return remove `quantity` (positive on the document), an adjustment applies its signed non-zero `quantity`, a count calls `StockService::count()` (locks the level, writes one `count` movement for counted minus on-hand, none when equal) and stores `expected_quantity` per line (`variance` in the Resource). One negative result rolls the whole post back (422 on `lines`). Movement types: `damage`, `return_to_supplier`, `adjustment`, `count`; the document's `reason` is the movement `note`.
+- "Returns" here are returns to a supplier. Customer returns need orders and come with E6/E10.
+- Tests: `tests/Feature/Inventory/StockDocumentsTest.php`.
