@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\GalleryItemController;
 use App\Http\Controllers\Api\V1\GalleryItemImageController;
+use App\Http\Controllers\Api\V1\GoodsReceiptController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\LocalesController;
 use App\Http\Controllers\Api\V1\LogoutController;
@@ -35,6 +36,7 @@ use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\ServiceImageController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\SettingImageController;
+use App\Http\Controllers\Api\V1\StockController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\TeamMemberController;
 use App\Http\Controllers\Api\V1\TeamMemberImageController;
@@ -166,6 +168,12 @@ Route::prefix('v1')->group(function (): void {
         Route::post('purchase-orders/{purchase_order}/lines', [PurchaseOrderLineController::class, 'store']);
         Route::patch('purchase-order-lines/{line}', [PurchaseOrderLineController::class, 'update']);
         Route::delete('purchase-order-lines/{line}', [PurchaseOrderLineController::class, 'destroy']);
+
+        // Inventory: check-in (goods receipts) and read-only stock views
+        Route::apiResource('goods-receipts', GoodsReceiptController::class);
+        Route::post('goods-receipts/{goods_receipt}/post', [GoodsReceiptController::class, 'post']);
+        Route::get('stock/levels', [StockController::class, 'levels'])->middleware('can:stock.view');
+        Route::get('stock/movements', [StockController::class, 'movements'])->middleware('can:stock.view');
 
         // Contact inbox (no create/delete)
         Route::apiResource('contact-messages', ContactMessageController::class)

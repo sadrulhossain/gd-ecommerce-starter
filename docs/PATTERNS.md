@@ -143,3 +143,12 @@ singleton reference: Settings. Paths below are relative to `api/app` unless note
 - Money: integer minor units in, `{amount, currency}` out; totals (`subtotal`, `tax_total`, `grand_total`) and line totals are computed only by `Services/PurchaseOrderService` and never accepted from a client. Tax is per line in basis points (100 = 1%), rounded half-up per line; E8 adds the tax module. `unit_cost` defaults to the variant's `cost_price`. Lines snapshot `sku` and `name`.
 - Line endpoints return the whole order because totals change: `POST purchase-orders/{id}/lines`, `PATCH|DELETE purchase-order-lines/{id}`.
 - A supplier with purchase orders can be deactivated, not deleted (422). Tests: `tests/Feature/Purchasing`.
+
+## Check-in and stock ledger (E3)
+- Permissions: `goods-receipts.view|create|update|delete|post`; `stock.view` (read-only `GET stock/levels`, `GET stock/movements`, guarded by `can:stock.view`). Admin only, no public routes, no content webhook.
+- `Services/StockService::apply()` is the only writer of stock. It runs in a transaction, locks the variant's `stock_levels` row, appends one `stock_movements` row (signed `quantity`, `balance_after`, `type`, `reference_type` = source table, `reference_id`) and refuses a negative result (422 on `quantity`). Later phases add movement types and call the same method; never write `stock_levels` or `stock_movements` anywhere else.
+- `stock_movements` is append-only: a Postgres trigger rejects UPDATE and DELETE. Correct a mistake with a new document (a reverse movement), never an edit.
+- Goods receipt: draft, then posted (same shape as purchase orders). A receipt belongs to one `ordered` or `partially_received` purchase order. Lines are `purchase_order_line_id` + `quantity` (+ optional `unit_cost`, default the order line's cost); the quantity cannot exceed what is outstanding. `PATCH` with `lines` replaces all lines of a draft. A draft does not touch stock.
+- `POST goods-receipts/{id}/post` (`GoodsReceiptService::post`) locks the receipt, order and order lines, re-checks outstanding quantities (two drafts can race), writes the movements, adds to `purchase_order_lines.quantity_received`, and sets the order to `partially_received` or `received`. Posted receipts cannot be changed or deleted (422 on `status`).
+- Numbers come from the sequence `goods_receipt_number_seq` (`GR-000001`); like `purchase_order_number_seq` they are not rolled back by tests, so assert the format, not the value.
+- Tests: `tests/Feature/Inventory`.

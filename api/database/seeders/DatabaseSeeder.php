@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             BlogModuleSeeder::class,
             CatalogModuleSeeder::class,
             PurchasingModuleSeeder::class,
+            StockModuleSeeder::class,
             ContactModuleSeeder::class,
             SettingsModuleSeeder::class,
             AccessModuleSeeder::class,

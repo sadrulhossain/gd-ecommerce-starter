@@ -21,3 +21,6 @@ SocialIcon, and `sections/*` (home and page sections).
 
 ## Rule
 Admin theme: unchanged. Portal: change only `packages/tokens/portal.css` and the portal components, in E11.
+
+## Text scale
+Both themes override the whole Tailwind text scale (`--text-xs` ... `--text-7xl`) in their token file. Admin: every size one step smaller than the default scale (base 13px). Portal: every size two steps smaller (base 12px). Change a size there, not in a component.
