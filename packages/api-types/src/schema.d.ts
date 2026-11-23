@@ -1768,6 +1768,278 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/damages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List documents
+         * @description Newest first, 20 per page, without lines. Filters: `status`, `q` (number).
+         */
+        get: operations["v1.stockDocument.index_164"];
+        put?: never;
+        /**
+         * Create a document (draft)
+         * @description Fields by type: damage `reason` (required); supplier return `supplier_id` (required) and `reason`; adjustment
+         *     `reason` (required). Optional `lines` (`variant_id`, `quantity`, optional `unit_cost` in minor units, default the
+         *     variant's cost price): damage and return quantities are positive units removed, an adjustment quantity is a signed
+         *     non-zero change, a stock count quantity is the counted amount (0 or more).
+         */
+        post: operations["v1.stockDocument.store_165"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/damages/{stockDocument}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a document with its lines */
+        get: operations["v1.stockDocument.show_166"];
+        put?: never;
+        post?: never;
+        /** Delete a draft (posted documents are kept; correct them with a new document) */
+        delete: operations["v1.stockDocument.destroy_168"];
+        options?: never;
+        head?: never;
+        /** Update a draft: header fields, and `lines` (replaces all lines when sent) */
+        patch: operations["v1.stockDocument.update_167"];
+        trace?: never;
+    };
+    "/v1/damages/{stockDocument}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post a document
+         * @description Writes the stock ledger (one row per line) and makes the document immutable. Damage and return remove stock,
+         *     an adjustment applies its signed change, a count sets stock to the counted quantity and records the expected
+         *     quantity and variance per line. Needs at least one line; nothing is written if any line would take stock below zero.
+         */
+        post: operations["v1.stockDocument.post_169"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/supplier-returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List documents
+         * @description Newest first, 20 per page, without lines. Filters: `status`, `q` (number).
+         */
+        get: operations["v1.stockDocument.index_170"];
+        put?: never;
+        /**
+         * Create a document (draft)
+         * @description Fields by type: damage `reason` (required); supplier return `supplier_id` (required) and `reason`; adjustment
+         *     `reason` (required). Optional `lines` (`variant_id`, `quantity`, optional `unit_cost` in minor units, default the
+         *     variant's cost price): damage and return quantities are positive units removed, an adjustment quantity is a signed
+         *     non-zero change, a stock count quantity is the counted amount (0 or more).
+         */
+        post: operations["v1.stockDocument.store_171"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/supplier-returns/{stockDocument}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a document with its lines */
+        get: operations["v1.stockDocument.show_172"];
+        put?: never;
+        post?: never;
+        /** Delete a draft (posted documents are kept; correct them with a new document) */
+        delete: operations["v1.stockDocument.destroy_174"];
+        options?: never;
+        head?: never;
+        /** Update a draft: header fields, and `lines` (replaces all lines when sent) */
+        patch: operations["v1.stockDocument.update_173"];
+        trace?: never;
+    };
+    "/v1/supplier-returns/{stockDocument}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post a document
+         * @description Writes the stock ledger (one row per line) and makes the document immutable. Damage and return remove stock,
+         *     an adjustment applies its signed change, a count sets stock to the counted quantity and records the expected
+         *     quantity and variance per line. Needs at least one line; nothing is written if any line would take stock below zero.
+         */
+        post: operations["v1.stockDocument.post_175"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List documents
+         * @description Newest first, 20 per page, without lines. Filters: `status`, `q` (number).
+         */
+        get: operations["v1.stockDocument.index_176"];
+        put?: never;
+        /**
+         * Create a document (draft)
+         * @description Fields by type: damage `reason` (required); supplier return `supplier_id` (required) and `reason`; adjustment
+         *     `reason` (required). Optional `lines` (`variant_id`, `quantity`, optional `unit_cost` in minor units, default the
+         *     variant's cost price): damage and return quantities are positive units removed, an adjustment quantity is a signed
+         *     non-zero change, a stock count quantity is the counted amount (0 or more).
+         */
+        post: operations["v1.stockDocument.store_177"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/adjustments/{stockDocument}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a document with its lines */
+        get: operations["v1.stockDocument.show_178"];
+        put?: never;
+        post?: never;
+        /** Delete a draft (posted documents are kept; correct them with a new document) */
+        delete: operations["v1.stockDocument.destroy_180"];
+        options?: never;
+        head?: never;
+        /** Update a draft: header fields, and `lines` (replaces all lines when sent) */
+        patch: operations["v1.stockDocument.update_179"];
+        trace?: never;
+    };
+    "/v1/adjustments/{stockDocument}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post a document
+         * @description Writes the stock ledger (one row per line) and makes the document immutable. Damage and return remove stock,
+         *     an adjustment applies its signed change, a count sets stock to the counted quantity and records the expected
+         *     quantity and variance per line. Needs at least one line; nothing is written if any line would take stock below zero.
+         */
+        post: operations["v1.stockDocument.post_181"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/stock-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List documents
+         * @description Newest first, 20 per page, without lines. Filters: `status`, `q` (number).
+         */
+        get: operations["v1.stockDocument.index_182"];
+        put?: never;
+        /**
+         * Create a document (draft)
+         * @description Fields by type: damage `reason` (required); supplier return `supplier_id` (required) and `reason`; adjustment
+         *     `reason` (required). Optional `lines` (`variant_id`, `quantity`, optional `unit_cost` in minor units, default the
+         *     variant's cost price): damage and return quantities are positive units removed, an adjustment quantity is a signed
+         *     non-zero change, a stock count quantity is the counted amount (0 or more).
+         */
+        post: operations["v1.stockDocument.store_183"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/stock-counts/{stockDocument}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a document with its lines */
+        get: operations["v1.stockDocument.show_184"];
+        put?: never;
+        post?: never;
+        /** Delete a draft (posted documents are kept; correct them with a new document) */
+        delete: operations["v1.stockDocument.destroy_186"];
+        options?: never;
+        head?: never;
+        /** Update a draft: header fields, and `lines` (replaces all lines when sent) */
+        patch: operations["v1.stockDocument.update_185"];
+        trace?: never;
+    };
+    "/v1/stock-counts/{stockDocument}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post a document
+         * @description Writes the stock ledger (one row per line) and makes the document immutable. Damage and return remove stock,
+         *     an adjustment applies its signed change, a count sets stock to the counted quantity and records the expected
+         *     quantity and variance per line. Needs at least one line; nothing is written if any line would take stock below zero.
+         */
+        post: operations["v1.stockDocument.post_187"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/suppliers": {
         parameters: {
             query?: never;
@@ -2397,6 +2669,39 @@ export interface components {
             /** Format: date-time */
             updated_at: string | null;
         };
+        /** StockDocumentLineResource */
+        StockDocumentLineResource: {
+            id: number;
+            variant_id: number;
+            sku: string;
+            name: string;
+            quantity: number;
+            expected_quantity: number | null;
+            variance: number | null;
+            unit_cost: {
+                amount: number | null;
+                /** @constant */
+                currency: "BDT";
+            } | null;
+        };
+        /** StockDocumentResource */
+        StockDocumentResource: {
+            id: number;
+            number: string;
+            type: string;
+            status: string;
+            reason: string | null;
+            supplier_id: number | null;
+            supplier?: components["schemas"]["SupplierResource"] | null;
+            notes: string | null;
+            /** Format: date-time */
+            posted_at: string | null;
+            lines?: components["schemas"]["StockDocumentLineResource"][];
+            /** Format: date-time */
+            created_at: string | null;
+            /** Format: date-time */
+            updated_at: string | null;
+        };
         /** StockLevelResource */
         StockLevelResource: {
             variant_id: number;
@@ -2674,6 +2979,17 @@ export interface components {
              * @description Maximum file size: 5120 kilobytes.
              */
             image: string;
+        };
+        /** StoreStockDocumentRequest */
+        StoreStockDocumentRequest: {
+            reason?: string;
+            supplier_id?: string;
+            notes?: string | null;
+            lines?: {
+                variant_id?: number;
+                quantity?: number;
+                unit_cost?: number | null;
+            }[];
         };
         /** StoreSupplierRequest */
         StoreSupplierRequest: {
@@ -2997,6 +3313,20 @@ export interface components {
                 /** Format: uri */
                 whatsapp?: string | null;
             };
+        };
+        /**
+         * UpdateStockDocumentRequest
+         * @description A draft's header and, when `lines` is sent, its whole line list (replaced).
+         */
+        UpdateStockDocumentRequest: {
+            reason?: string;
+            supplier_id?: string;
+            notes?: string | null;
+            lines?: {
+                variant_id?: number;
+                quantity?: number;
+                unit_cost?: number | null;
+            }[];
         };
         /** UpdateSupplierRequest */
         UpdateSupplierRequest: {
@@ -7246,6 +7576,781 @@ export interface operations {
             };
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "v1.stockDocument.index_164": {
+        parameters: {
+            query?: {
+                status?: string;
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["StockDocumentResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "v1.stockDocument.store_165": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["StoreStockDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.show_166": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.stockDocument.destroy_168": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.update_167": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateStockDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.post_169": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.index_170": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["StockDocumentResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "v1.stockDocument.store_171": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["StoreStockDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.show_172": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.stockDocument.destroy_174": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.update_173": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateStockDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.post_175": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.index_176": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["StockDocumentResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "v1.stockDocument.store_177": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["StoreStockDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.show_178": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.stockDocument.destroy_180": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.update_179": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateStockDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.post_181": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.index_182": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["StockDocumentResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "v1.stockDocument.store_183": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["StoreStockDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.show_184": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "v1.stockDocument.destroy_186": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.update_185": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateStockDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.stockDocument.post_187": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The stock document ID */
+                stockDocument: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `StockDocumentResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockDocumentResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "suppliers.index": {

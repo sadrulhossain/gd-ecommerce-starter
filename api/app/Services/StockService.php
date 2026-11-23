@@ -15,6 +15,27 @@ use Illuminate\Validation\ValidationException;
 class StockService
 {
     /**
+     * Set a variant's stock to a counted quantity: under the row lock, writes one `count` movement for the difference
+     * (none when the count matches). Returns the on-hand it found and the signed difference.
+     *
+     * @return array{expected: int, delta: int}
+     */
+    public function count(int $variantId, int $counted, Model $reference, ?int $userId = null): array
+    {
+        return DB::transaction(function () use ($variantId, $counted, $reference, $userId): array {
+            StockLevel::query()->insertOrIgnore(['variant_id' => $variantId, 'on_hand' => 0]);
+            $expected = StockLevel::query()->whereKey($variantId)->lockForUpdate()->firstOrFail()->on_hand;
+            $delta = $counted - $expected;
+
+            if ($delta !== 0) {
+                $this->apply($variantId, StockMovement::COUNT, $delta, $reference, null, $userId);
+            }
+
+            return ['expected' => $expected, 'delta' => $delta];
+        });
+    }
+
+    /**
      * Apply a signed quantity to a variant and return the ledger row.
      *
      * @throws ValidationException when the result would be negative

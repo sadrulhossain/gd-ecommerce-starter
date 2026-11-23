@@ -37,6 +37,7 @@ use App\Http\Controllers\Api\V1\ServiceImageController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\SettingImageController;
 use App\Http\Controllers\Api\V1\StockController;
+use App\Http\Controllers\Api\V1\StockDocumentController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\TeamMemberController;
 use App\Http\Controllers\Api\V1\TeamMemberImageController;
@@ -44,6 +45,7 @@ use App\Http\Controllers\Api\V1\TestimonialController;
 use App\Http\Controllers\Api\V1\TestimonialImageController;
 use App\Http\Controllers\Api\V1\UserController;
 use App\Http\Middleware\LocalizePublicResponse;
+use App\Models\StockDocument;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -174,6 +176,17 @@ Route::prefix('v1')->group(function (): void {
         Route::post('goods-receipts/{goods_receipt}/post', [GoodsReceiptController::class, 'post']);
         Route::get('stock/levels', [StockController::class, 'levels'])->middleware('can:stock.view');
         Route::get('stock/movements', [StockController::class, 'movements'])->middleware('can:stock.view');
+
+        // Stock documents (draft, then posted): damages, supplier-returns, adjustments, stock-counts share one controller
+        foreach (StockDocument::TYPES as $type => $config) {
+            $path = $config['path'];
+            Route::get($path, [StockDocumentController::class, 'index'])->defaults('type', $type);
+            Route::post($path, [StockDocumentController::class, 'store'])->defaults('type', $type);
+            Route::get("{$path}/{stock_document}", [StockDocumentController::class, 'show'])->defaults('type', $type);
+            Route::patch("{$path}/{stock_document}", [StockDocumentController::class, 'update'])->defaults('type', $type);
+            Route::delete("{$path}/{stock_document}", [StockDocumentController::class, 'destroy'])->defaults('type', $type);
+            Route::post("{$path}/{stock_document}/post", [StockDocumentController::class, 'post'])->defaults('type', $type);
+        }
 
         // Contact inbox (no create/delete)
         Route::apiResource('contact-messages', ContactMessageController::class)
