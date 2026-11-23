@@ -412,6 +412,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/goods-receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List goods receipts
+         * @description Newest first, 20 per page, without lines. Filters: `status`, `purchase_order_id`, `q` (receipt or order number).
+         */
+        get: operations["goods-receipts.index"];
+        put?: never;
+        /**
+         * Create a goods receipt (draft)
+         * @description Checks goods in against an `ordered` or `partially_received` purchase order. Optional `lines`
+         *     (`purchase_order_line_id`, `quantity`, optional `unit_cost` in minor units, defaulting to the order line's cost);
+         *     a quantity cannot exceed what is still outstanding. Stock changes only when the receipt is posted.
+         */
+        post: operations["goods-receipts.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/goods-receipts/{goodsReceipt}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Show a goods receipt with its lines */
+        get: operations["goods-receipts.show"];
+        /** Update a draft goods receipt: `delivery_note`, `notes`, and `lines` (replaces all lines when sent) */
+        put: operations["goods-receipts.update"];
+        post?: never;
+        /** Delete a draft goods receipt (posted ones are kept; correct them with a new document) */
+        delete: operations["goods-receipts.destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/goods-receipts/{goodsReceipt}/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post a goods receipt
+         * @description Adds the stock (one ledger row per line), updates the purchase order's received quantities and status, and makes
+         *     the receipt immutable. Needs at least one line; quantities are re-checked against the order under a lock.
+         */
+        post: operations["goodsReceipt.post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/health": {
         parameters: {
             query?: never;
@@ -1662,6 +1728,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/stock/levels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List stock levels
+         * @description On-hand per variant, 50 per page, lowest first. Filters: `q` (SKU or product name), `max` (on hand at or below).
+         */
+        get: operations["stock.levels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/stock/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the stock ledger
+         * @description Newest first, 50 per page. Filters: `variant_id`, `type`, `from` and `to` (dates). Rows are never changed or deleted.
+         */
+        get: operations["stock.movements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/suppliers": {
         parameters: {
             query?: never;
@@ -1979,6 +2085,36 @@ export interface components {
             /** Format: date-time */
             updated_at: string | null;
         };
+        /** GoodsReceiptLineResource */
+        GoodsReceiptLineResource: {
+            id: number;
+            purchase_order_line_id: number;
+            variant_id: number;
+            sku: string;
+            name: string;
+            quantity: number;
+            unit_cost: {
+                amount: number;
+                currency: string;
+            };
+        };
+        /** GoodsReceiptResource */
+        GoodsReceiptResource: {
+            id: number;
+            number: string;
+            purchase_order_id: number;
+            purchase_order_number?: string;
+            status: string;
+            delivery_note: string | null;
+            notes: string | null;
+            /** Format: date-time */
+            posted_at: string | null;
+            lines?: components["schemas"]["GoodsReceiptLineResource"][];
+            /** Format: date-time */
+            created_at: string | null;
+            /** Format: date-time */
+            updated_at: string | null;
+        };
         /** MenuResource */
         MenuResource: {
             id: number;
@@ -2261,6 +2397,36 @@ export interface components {
             /** Format: date-time */
             updated_at: string | null;
         };
+        /** StockLevelResource */
+        StockLevelResource: {
+            variant_id: number;
+            sku: string;
+            name: string | null;
+            product: string;
+            on_hand: number;
+            /** Format: date-time */
+            updated_at: string | null;
+        };
+        /** StockMovementResource */
+        StockMovementResource: {
+            id: number;
+            variant_id: number;
+            sku?: string;
+            type: string;
+            quantity: number;
+            balance_after: number;
+            unit_cost: {
+                amount: number | null;
+                /** @constant */
+                currency: "BDT";
+            } | null;
+            reference_type: string;
+            reference_id: number;
+            note: string | null;
+            created_by: number | null;
+            /** Format: date-time */
+            created_at: string;
+        };
         /** StoreBrandImageRequest */
         StoreBrandImageRequest: {
             /**
@@ -2323,6 +2489,17 @@ export interface components {
             caption_2nd?: string | null;
             sort_order?: number;
             is_visible?: boolean;
+        };
+        /** StoreGoodsReceiptRequest */
+        StoreGoodsReceiptRequest: {
+            purchase_order_id: number;
+            delivery_note?: string | null;
+            notes?: string | null;
+            lines?: {
+                purchase_order_line_id?: number;
+                quantity?: number;
+                unit_cost?: number | null;
+            }[];
         };
         /** StorePostImageRequest */
         StorePostImageRequest: {
@@ -2633,6 +2810,19 @@ export interface components {
             caption_2nd?: string | null;
             sort_order?: number;
             is_visible?: boolean;
+        };
+        /**
+         * UpdateGoodsReceiptRequest
+         * @description A draft's header and, when `lines` is sent, its whole line list (replaced).
+         */
+        UpdateGoodsReceiptRequest: {
+            delivery_note?: string | null;
+            notes?: string | null;
+            lines?: {
+                purchase_order_line_id?: number;
+                quantity?: number;
+                unit_cost?: number | null;
+            }[];
         };
         /** UpdateMenuRequest */
         UpdateMenuRequest: {
@@ -3865,6 +4055,203 @@ export interface operations {
             401: components["responses"]["AuthenticationException"];
             403: components["responses"]["AuthorizationException"];
             404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "goods-receipts.index": {
+        parameters: {
+            query?: {
+                status?: string;
+                purchase_order_id?: string;
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `GoodsReceiptResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["GoodsReceiptResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "goods-receipts.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreGoodsReceiptRequest"];
+            };
+        };
+        responses: {
+            /** @description `GoodsReceiptResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["GoodsReceiptResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "goods-receipts.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The goods receipt ID */
+                goodsReceipt: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `GoodsReceiptResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["GoodsReceiptResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+        };
+    };
+    "goods-receipts.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The goods receipt ID */
+                goodsReceipt: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateGoodsReceiptRequest"];
+            };
+        };
+        responses: {
+            /** @description `GoodsReceiptResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["GoodsReceiptResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "goods-receipts.destroy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The goods receipt ID */
+                goodsReceipt: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "goodsReceipt.post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The goods receipt ID */
+                goodsReceipt: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `GoodsReceiptResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["GoodsReceiptResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+            404: components["responses"]["ModelNotFoundException"];
+            422: components["responses"]["ValidationException"];
         };
     };
     "v1.health": {
@@ -6749,6 +7136,111 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["SettingResource"];
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "stock.levels": {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `StockLevelResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["StockLevelResource"][];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["AuthenticationException"];
+            403: components["responses"]["AuthorizationException"];
+        };
+    };
+    "stock.movements": {
+        parameters: {
+            query?: {
+                variant_id?: string;
+                type?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated set of `StockMovementResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: (components["schemas"]["StockMovementResource"] & Record<string, never>)[];
+                        links: {
+                            first: string | null;
+                            last: string | null;
+                            prev: string | null;
+                            next: string | null;
+                        };
+                        meta: {
+                            current_page: number;
+                            from: number | null;
+                            last_page: number;
+                            /** @description Generated paginator links. */
+                            links: {
+                                url: string | null;
+                                label: string;
+                                active: boolean;
+                            }[];
+                            /** @description Base path for paginator generated URLs. */
+                            path: string | null;
+                            /** @description Number of items shown per page. */
+                            per_page: number;
+                            /** @description Number of the last item in the slice. */
+                            to: number | null;
+                            /** @description Total number of items being paginated. */
+                            total: number;
+                        };
                     };
                 };
             };

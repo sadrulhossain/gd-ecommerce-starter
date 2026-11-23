@@ -119,6 +119,16 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
 
-  --text-sm: 0.8125rem;
-  --text-base: 0.875rem;
+  /* Text scale, every step one level smaller than before (each name takes the previous step's size). */
+  --text-xs: 0.6875rem;
+  --text-sm: 0.75rem;
+  --text-base: 0.8125rem;
+  --text-lg: 0.875rem;
+  --text-xl: 1.125rem;
+  --text-2xl: 1.25rem;
+  --text-3xl: 1.5rem;
+  --text-4xl: 1.875rem;
+  --text-5xl: 2.25rem;
+  --text-6xl: 3rem;
+  --text-7xl: 3.75rem;
 }
