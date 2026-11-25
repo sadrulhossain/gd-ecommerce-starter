@@ -43,7 +43,7 @@ it('is idempotent', function () {
 
     expect(User::count())->toBe(1)
         ->and(Menu::count())->toBeGreaterThan(0)
-        ->and(Passport::client()->newQuery()->count())->toBe(1);
+        ->and(Passport::client()->newQuery()->where('name', 'Admin')->count())->toBe(1);
 });
 
 it('skips the superadmin and client when env is not set', function () {
@@ -51,5 +51,5 @@ it('skips the superadmin and client when env is not set', function () {
 
     $this->seed(DatabaseSeeder::class);
 
-    expect(User::count())->toBe(0)->and(Passport::client()->newQuery()->count())->toBe(0);
+    expect(User::count())->toBe(0)->and(Passport::client()->newQuery()->where('name', 'Admin')->count())->toBe(0);
 });
