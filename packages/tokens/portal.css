@@ -37,6 +37,12 @@
   --color-warning: #b7791f;
   --color-danger: #c53030;
 
+  /* Shop: price cuts and ratings. `sale` passes AA on white and on canvas; `star` is decorative only (never the only signal). */
+  --color-sale: #b42318;
+  --color-sale-soft: #fef0ee;
+  --color-star: #d97706;
+  --color-star-empty: #cfdcd5;
+
   --font-display: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   --radius-sm: 0.625rem;
