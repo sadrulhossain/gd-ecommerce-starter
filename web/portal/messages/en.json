@@ -5,7 +5,9 @@
     "skip": "Skip to content",
     "blog": "Blog",
     "contact": "Contact",
-    "explore": "Explore"
+    "explore": "Explore",
+    "shop": "Shop",
+    "cart": "Cart"
   },
   "language": {
     "label": "Language"
@@ -147,5 +149,57 @@
     "empty": "Prices will be announced soon.",
     "forService": "Pricing for this service",
     "viewService": "View service"
+  },
+  "shop": {
+    "title": "Shop",
+    "intro": "Browse our products.",
+    "categories": "Categories",
+    "all": "All products",
+    "search": "Search products",
+    "searchPlaceholder": "Search by name or SKU",
+    "sortLabel": "Sort by",
+    "sort": { "newest": "Newest", "price_asc": "Price: low to high", "price_desc": "Price: high to low", "name": "Name" },
+    "apply": "Apply",
+    "results": "{count} products",
+    "empty": "No products match.",
+    "clear": "Clear filters",
+    "from": "From",
+    "back": "Back to the shop",
+    "brand": "Brand",
+    "sku": "SKU",
+    "chooseOption": "Choose {name}",
+    "quantity": "Quantity",
+    "addToCart": "Add to cart",
+    "adding": "Adding...",
+    "added": "Added to your cart.",
+    "viewCart": "View cart",
+    "unavailableVariant": "This combination is not available.",
+    "description": "Description",
+    "pagination": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {last}"
+  },
+  "cart": {
+    "title": "Your cart",
+    "loading": "Loading your cart...",
+    "emptyTitle": "Your cart is empty",
+    "emptyText": "Add something you like and it will show up here.",
+    "keepShopping": "Keep shopping",
+    "item": "Item",
+    "price": "Price",
+    "quantity": "Quantity",
+    "total": "Total",
+    "remove": "Remove",
+    "removeItem": "Remove {name}",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "shippingNote": "Shipping and tax are calculated at checkout.",
+    "checkout": "Checkout",
+    "unavailable": "Unavailable",
+    "fixIssues": "Remove or change the items that are unavailable to continue.",
+    "error": "Could not load the cart. Please try again.",
+    "retry": "Try again",
+    "summary": "Order summary"
   }
 }

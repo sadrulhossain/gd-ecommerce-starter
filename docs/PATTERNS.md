@@ -211,3 +211,11 @@ singleton reference: Settings. Paths below are relative to `api/app` unless note
 - Shared UI: `Pager` (pagination) and `VariantPicker` (search by SKU or name, pick a variant) in `components/`.
 - API added: `GET|POST /v1/payment-methods`, `PATCH /v1/payment-methods/{id}` (registry driver codes only, credentials write-only, methods are disabled not deleted) and `GET /v1/deliveries` (feeds COD remittance drafts). Permissions `payment-methods.view|create|update` (`PaymentMethodsModuleSeeder`).
 - Tests: `web/admin/src/ops.test.tsx` and `api/tests/Feature/Payments/PaymentMethodsAdminTest.php`.
+
+## Portal shop: listing, product, cart (E12)
+- English only: new portal text goes in `messages/en.json` (`nav.shop`, `nav.cart`, `shop.*`, `cart.*`); `second.json` is not touched.
+- Data: `lib/shop-api.ts` (`getProducts`, `getProduct`, `getShopCategories`, `cardPrice`, `orderedImages`) reads `/v1/public/products*` and `/v1/public/product-categories` through the cached `apiFor` client. Prices are the API's `{amount, currency}`; format only with `formatMoney` (via `lib/shop.ts`).
+- Pages: `/shop` (`?category=<slug>&q=&sort=&page=`; filtered and later pages canonicalise to `/shop`), `/shop/<slug>` (gallery, option selects per variant, quantity, add to cart, Product JSON-LD from `productJsonLd`), `/cart` (client-rendered, `noindex`). Products are in the sitemap.
+- Cart: the token is an httpOnly cookie (`cart_token`, 30 days) that only the route handlers under `app/api/cart` read (`lib/cart-server.ts`); the browser calls `/api/cart` and `/api/cart/items[/<variantId>]` through `lib/cart-client.ts`, which announces `cart:changed` so the header `CartLink` updates its count. Pages and shared components still never read cookies (ISR stays). The cart never computes prices: totals, `available`, `issue` and `can_checkout` come from the API; stock errors show as the API's message.
+- Components: `components/shop/{AddToCart,CartView,CartLink}` (client) on top of the E11 kit. Checkout is E13: `/cart` links to `/checkout`.
+- Tests: `web/portal/e2e/shop.spec.ts` (axe on listing, product and cart; add, change and remove a line). It needs sample products with stock: `db:seed --class='Database\Seeders\Site\SiteCatalogSeeder'` then post a stock adjustment; without stock the add-to-cart test skips.

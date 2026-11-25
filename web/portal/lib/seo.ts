@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import type { Post, Settings } from './api'
+import type { Product } from './shop-api'
 import { defaultLocale, localePath, locales } from './i18n'
 
 /** Public origin of the portal, for canonical URLs, Open Graph, the sitemap and JSON-LD. Set SITE_URL in production. */
@@ -103,6 +104,32 @@ export function articleJsonLd(post: Post, settings: Settings, locale: string): R
     articleSection: post.category?.name,
     author: { '@type': 'Organization', name: settings.site_name },
     publisher: { '@type': 'Organization', name: settings.site_name },
+  })
+}
+
+/** schema.org Product with one Offer per variant (price in major units, as schema.org expects). */
+export function productJsonLd(product: Product, settings: Settings, locale: string): Record<string, unknown> {
+  const url = absolute(localePath(locale, `/shop/${product.slug}`))
+  const offer = (v: Product['variants'][number]) => ({
+    '@type': 'Offer',
+    sku: v.sku,
+    price: (v.price.amount / 100).toFixed(2),
+    priceCurrency: v.price.currency,
+    availability: 'https://schema.org/InStock',
+    url,
+  })
+
+  return clean({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.seo_description ?? product.short_description,
+    image: product.images.map((i) => i.image?.url).filter(Boolean),
+    brand: product.brand ? { '@type': 'Brand', name: product.brand.name } : undefined,
+    category: product.category?.name,
+    url,
+    offers: product.variants.length === 1 ? offer(product.variants[0]) : product.variants.map(offer),
+    seller: { '@type': 'Organization', name: settings.site_name },
   })
 }
 
