@@ -13,14 +13,25 @@ export function blank(fields: CrudField[]): Record<string, unknown> {
   )
 }
 
+/** Form values for a row being edited (or blanks for a new one): a money field's `{amount, currency}` becomes its minor-unit amount. */
+export function editValues(fields: CrudField[], row: Record<string, unknown> | null): Record<string, unknown> {
+  const values: Record<string, unknown> = { ...blank(fields), ...(row ?? {}) }
+  for (const f of fields) {
+    const v = values[f.name]
+    if (f.type === 'money' && v !== null && typeof v === 'object') values[f.name] = (v as { amount: number }).amount
+  }
+
+  return values
+}
+
 /** Field values sent to the API: only configured fields (and their _2nd twins), `''` for optional text becomes null. */
 export function payload(fields: CrudField[], values: Record<string, unknown>): Record<string, unknown> {
   const entries = fields.flatMap((f) =>
     (f.bilingual ? [f.name, `${f.name}_2nd`] : [f.name]).map((n) => ({ n, v: values[n] === '' ? null : values[n], type: f.type })),
   )
 
-  // A blank number is left out: the API takes absent, not null, for those.
-  return Object.fromEntries(entries.filter((e) => !(e.type === 'number' && e.v === null)).map((e) => [e.n, e.v]))
+  // A blank number or amount is left out: the API takes absent, not null, for those.
+  return Object.fromEntries(entries.filter((e) => !((e.type === 'number' || e.type === 'money') && e.v === null)).map((e) => [e.n, e.v]))
 }
 
 /** First message per field from a 422 response; empty for any other error. */

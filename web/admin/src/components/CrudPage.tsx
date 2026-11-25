@@ -3,7 +3,7 @@ import { useState, type ReactNode } from 'react'
 import { ApiError } from '@gd/api-client'
 import { api } from '../api'
 import { useAuth } from '../auth/store'
-import { blank, fieldErrors, payload } from '../lib/crud'
+import { editValues, fieldErrors, payload } from '../lib/crud'
 import { moveId } from '../lib/reorder'
 import type { Listing } from '../types'
 import { BilingualField } from './BilingualField'
@@ -191,7 +191,7 @@ export function CrudPage({ config }: { config: CrudConfig }) {
 
 function CrudForm({ config, row, onDone, onCancel }: { config: CrudConfig; row: Row | null; onDone: () => void; onCancel: () => void }) {
   const queryClient = useQueryClient()
-  const [values, setValues] = useState<Record<string, unknown>>(() => ({ ...blank(config.fields), ...(row ?? {}) }))
+  const [values, setValues] = useState<Record<string, unknown>>(() => editValues(config.fields, row))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const set = (name: string, value: unknown) => setValues((v) => ({ ...v, [name]: value }))
 

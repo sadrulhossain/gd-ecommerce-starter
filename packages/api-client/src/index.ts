@@ -139,4 +139,5 @@ export function createClient(options: ClientOptions) {
 }
 
 export type ApiClient = ReturnType<typeof createClient>
+export { formatMoney, fromMinor, toMinor, type Money } from './money'
 export type { components, paths } from '@gd/api-types'

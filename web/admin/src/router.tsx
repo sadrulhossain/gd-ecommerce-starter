@@ -10,7 +10,10 @@ import { Callback, SignedOut } from './pages/auth'
 import { Dashboard } from './pages/Dashboard'
 import { NotFound } from './pages/errors'
 import { MessagesPage } from './pages/Messages'
+import { ProductsPage } from './pages/Products'
 import { ProfilePage } from './pages/Profile'
+import { PurchaseOrdersPage } from './pages/PurchaseOrders'
+import { ReviewsPage } from './pages/Reviews'
 import { SettingsPage } from './pages/Settings'
 import { about, hero, settings } from './settingsConfig'
 import { Showcase } from './showcase'
@@ -27,6 +30,13 @@ function GalleryPage({ config }: { config: CrudConfig }) {
 
 /** Modules that need more than the plain page; everything else renders CrudPage directly. */
 const pages: Record<string, ComponentType<{ config: CrudConfig }>> = { gallery: GalleryPage }
+
+/** Shop screens that are not plain CRUD: route path (no leading slash), permission, page. */
+export const shopPages: Array<{ path: string; permission: string; Page: ComponentType }> = [
+  { path: 'products', permission: 'products.view', Page: ProductsPage },
+  { path: 'purchase-orders', permission: 'purchase-orders.view', Page: PurchaseOrdersPage },
+  { path: 'reviews', permission: 'reviews.view', Page: ReviewsPage },
+]
 
 export const router = createBrowserRouter([
   // Public: the OAuth redirect target, the post-logout page and the theme showcase.
@@ -94,6 +104,15 @@ export const router = createBrowserRouter([
           </RequirePermission>
         ),
       },
+      // Shop screens with more than plain CRUD (see PATTERNS, Admin shop).
+      ...shopPages.map(({ path, permission, Page }) => ({
+        path,
+        element: (
+          <RequirePermission permission={permission}>
+            <Page />
+          </RequirePermission>
+        ),
+      })),
       // Own profile: any signed-in user, no permission.
       { path: 'profile', element: <ProfilePage /> },
       { path: '*', element: <NotFound /> },
