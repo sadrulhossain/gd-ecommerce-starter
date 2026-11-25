@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             OrdersModuleSeeder::class,
             DeliveryModuleSeeder::class,
             PromotionsModuleSeeder::class,
+            PaymentMethodsModuleSeeder::class,
             ContactModuleSeeder::class,
             SettingsModuleSeeder::class,
             AccessModuleSeeder::class,

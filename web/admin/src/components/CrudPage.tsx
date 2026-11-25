@@ -48,6 +48,8 @@ export interface CrudConfig {
   /** Text identifying a row in the delete confirmation. */
   rowLabel?: (row: Row) => string
   /** Seeded, edit-only modules (sections) turn these off. */
+  /** One permission that gates create, update and delete (modules with a single `manage` permission). */
+  manage?: string
   canCreate?: boolean
   canDelete?: boolean
   /**
@@ -73,9 +75,9 @@ export function CrudPage({ config }: { config: CrudConfig }) {
   const [editing, setEditing] = useState<Row | 'new' | null>(null)
   const [deleting, setDeleting] = useState<Row | null>(null)
 
-  const canCreate = config.canCreate !== false && can(`${config.key}.create`)
-  const canUpdate = can(`${config.key}.update`)
-  const canDelete = config.canDelete !== false && can(`${config.key}.delete`)
+  const canCreate = config.canCreate !== false && can(config.manage ?? `${config.key}.create`)
+  const canUpdate = can(config.manage ?? `${config.key}.update`)
+  const canDelete = config.canDelete !== false && can(config.manage ?? `${config.key}.delete`)
 
   const listKey = ['crud', config.endpoint, page]
   const list = useQuery({

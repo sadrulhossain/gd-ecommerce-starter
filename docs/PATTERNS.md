@@ -203,3 +203,11 @@ singleton reference: Settings. Paths below are relative to `api/app` unless note
 - Money: the API sends `{amount, currency}` in integer minor units. `formatMoney`, `toMinor` and `fromMinor` in `@gd/api-client` (`packages/api-client/src/money.ts`) are the only formatting and parsing helpers; never format an amount by hand. A form amount is `type: 'money'` (typed in major units, stored as minor units, a blank is not sent); `editValues()` in `lib/crud.ts` turns a row's `{amount, currency}` into the field value.
 - `useOptions(endpoint, label)` (`lib/options.ts`) builds select options from a `{data: [...]}` list. Variant options are typed as `Color=Red, Size=M` (`lib/variants.ts`).
 - Not in E9: product images (the multi-image endpoints) and the supplier select on a purchase order lists the first 20 active suppliers. Tests: `web/admin/src/shop.test.tsx`.
+
+## Admin stock, orders, delivery and payment methods (E10)
+- Screens are pages in `web/admin/src/pages`, listed in `shopPages` (`router.tsx`): `Stock` (on hand and ledger, read-only), `GoodsReceipts` (check-in against a placed purchase order, draft then post), `StockDocuments` (one page for damages, supplier returns, adjustments and stock counts, configured by `DOC_KINDS`), `Orders` (lifecycle, cancel with reason, assign courier), `Delivery` (zones and couriers, two `CrudPage` lists with `manage: 'delivery.manage'`), `CodRemittances`, `Reports` and `PaymentMethods`.
+- Draft-then-post documents: create a draft (lines included), open it, post or delete it. A posted document has no edit controls; to change a draft, delete it and create it again.
+- `CrudConfig.manage` is one permission that gates create, update and delete for modules whose API has a single `manage` permission.
+- Shared UI: `Pager` (pagination) and `VariantPicker` (search by SKU or name, pick a variant) in `components/`.
+- API added: `GET|POST /v1/payment-methods`, `PATCH /v1/payment-methods/{id}` (registry driver codes only, credentials write-only, methods are disabled not deleted) and `GET /v1/deliveries` (feeds COD remittance drafts). Permissions `payment-methods.view|create|update` (`PaymentMethodsModuleSeeder`).
+- Tests: `web/admin/src/ops.test.tsx` and `api/tests/Feature/Payments/PaymentMethodsAdminTest.php`.

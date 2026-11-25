@@ -10,7 +10,15 @@ import { Callback, SignedOut } from './pages/auth'
 import { Dashboard } from './pages/Dashboard'
 import { NotFound } from './pages/errors'
 import { MessagesPage } from './pages/Messages'
+import { CodRemittancesPage } from './pages/CodRemittances'
+import { DeliveryPage } from './pages/Delivery'
+import { GoodsReceiptsPage } from './pages/GoodsReceipts'
+import { OrdersPage } from './pages/Orders'
+import { PaymentMethodsPage } from './pages/PaymentMethods'
 import { ProductsPage } from './pages/Products'
+import { ReportsPage } from './pages/Reports'
+import { DOC_KINDS, StockDocumentsPage } from './pages/StockDocuments'
+import { StockPage } from './pages/Stock'
 import { ProfilePage } from './pages/Profile'
 import { PurchaseOrdersPage } from './pages/PurchaseOrders'
 import { ReviewsPage } from './pages/Reviews'
@@ -36,6 +44,14 @@ export const shopPages: Array<{ path: string; permission: string; Page: Componen
   { path: 'products', permission: 'products.view', Page: ProductsPage },
   { path: 'purchase-orders', permission: 'purchase-orders.view', Page: PurchaseOrdersPage },
   { path: 'reviews', permission: 'reviews.view', Page: ReviewsPage },
+  { path: 'stock', permission: 'stock.view', Page: StockPage },
+  { path: 'goods-receipts', permission: 'goods-receipts.view', Page: GoodsReceiptsPage },
+  ...DOC_KINDS.map((kind) => ({ path: kind.key, permission: `${kind.key}.view`, Page: () => <StockDocumentsPage kind={kind} /> })),
+  { path: 'orders', permission: 'orders.view', Page: OrdersPage },
+  { path: 'delivery', permission: 'delivery.view', Page: DeliveryPage },
+  { path: 'cod-remittances', permission: 'cod-remittances.view', Page: CodRemittancesPage },
+  { path: 'reports', permission: 'reports.view', Page: ReportsPage },
+  { path: 'payment-methods', permission: 'payment-methods.view', Page: PaymentMethodsPage },
 ]
 
 export const router = createBrowserRouter([

@@ -7,6 +7,7 @@ import { ConfirmDialog, Modal } from '../components/ConfirmDialog'
 import { DataTable } from '../components/DataTable'
 import { FormField } from '../components/FormField'
 import { IconButton } from '../components/IconButton'
+import { VariantPicker } from '../components/VariantPicker'
 import { toast } from '../components/Toast'
 import { fieldErrors } from '../lib/crud'
 import { useOptions } from '../lib/options'
@@ -307,25 +308,9 @@ function OrderDetail({ id, onChanged }: { id: number; onChanged: () => void }) {
   )
 }
 
-interface ProductHit {
-  name: string
-  variants?: Array<{ id: number; sku: string; name: string | null }>
-}
-
 function AddLineForm({ orderId, onAdded }: { orderId: number; onAdded: () => void }) {
-  const [search, setSearch] = useState('')
   const [values, setValues] = useState<Record<string, unknown>>({ variant_id: '', quantity_ordered: 1, unit_cost: '' })
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  const hits = useQuery({
-    queryKey: ['variant-search', search],
-    enabled: search.trim().length >= 2,
-    queryFn: async () => {
-      const body = (await api.request('GET', '/v1/products', { query: { q: search.trim() } })) as { data: ProductHit[] }
-
-      return body.data.flatMap((p) => (p.variants ?? []).map((v) => ({ value: v.id, label: `${v.sku} - ${p.name}${v.name ? ` (${v.name})` : ''}` })))
-    },
-  })
 
   const add = useMutation({
     mutationFn: () => {
@@ -356,8 +341,7 @@ function AddLineForm({ orderId, onAdded }: { orderId: number; onAdded: () => voi
         add.mutate()
       }}
     >
-      <FormField label="Find item (SKU or name)" name="line_search" value={search} onChange={(v) => setSearch(String(v))} />
-      <FormField label="Item" name="variant_id" type="select" required options={hits.data} value={values.variant_id} error={errors.variant_id} onChange={(v) => setValues({ ...values, variant_id: v })} />
+      <VariantPicker value={values.variant_id} error={errors.variant_id} onChange={(id) => setValues({ ...values, variant_id: id })} />
       <FormField label="Quantity" name="quantity_ordered" type="number" required value={values.quantity_ordered} error={errors.quantity_ordered} onChange={(v) => setValues({ ...values, quantity_ordered: v })} />
       <FormField label="Unit cost" name="unit_cost" type="money" hint="Empty uses the item's cost price." value={values.unit_cost} error={errors.unit_cost} onChange={(v) => setValues({ ...values, unit_cost: v })} />
       <div className="flex justify-end">

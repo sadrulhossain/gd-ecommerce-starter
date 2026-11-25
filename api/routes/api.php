@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\CourierController;
 use App\Http\Controllers\Api\V1\CustomerAuthController;
 use App\Http\Controllers\Api\V1\CustomerOrderController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\DeliveryController;
 use App\Http\Controllers\Api\V1\DeliveryZoneController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\GalleryItemController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\MeMenusController;
 use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\OrderController;
+use App\Http\Controllers\Api\V1\PaymentMethodController;
 use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\PostImageController;
@@ -240,6 +242,12 @@ Route::prefix('v1')->group(function (): void {
         Route::get('reports/sales', [ReportController::class, 'sales'])->middleware('can:reports.view');
         Route::get('reports/cod-reconciliation', [ReportController::class, 'codReconciliation'])->middleware('can:reports.view');
         Route::get('reports/stock-valuation', [ReportController::class, 'stockValuation'])->middleware('can:reports.view');
+
+        // Payment methods (registry-backed, never deleted) and the delivery list behind COD remittances
+        Route::get('payment-methods', [PaymentMethodController::class, 'index'])->middleware('can:payment-methods.view');
+        Route::post('payment-methods', [PaymentMethodController::class, 'store']);
+        Route::patch('payment-methods/{payment_method}', [PaymentMethodController::class, 'update']);
+        Route::get('deliveries', [DeliveryController::class, 'index'])->middleware('can:cod-remittances.view');
 
         // Promotions: tax rates, coupons, review moderation
         Route::get('tax-rates', [TaxRateController::class, 'index'])->middleware('can:tax-rates.view');
