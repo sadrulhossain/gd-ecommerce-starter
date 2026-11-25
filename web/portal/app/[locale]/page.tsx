@@ -4,7 +4,7 @@ import { JsonLd } from '../../components/JsonLd'
 import { SectionRenderer } from '../../components/sections'
 import { getSections, getSettings } from '../../lib/api'
 import { getMessages, isLocale } from '../../lib/i18n'
-import { localBusinessJsonLd, pageMetadata } from '../../lib/seo'
+import { localBusinessJsonLd, pageMetadata, websiteJsonLd } from '../../lib/seo'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -26,6 +26,7 @@ export default async function Home({ params }: Props) {
   return (
     <>
       <JsonLd data={localBusinessJsonLd(settings, locale)} />
+      <JsonLd data={websiteJsonLd(settings, locale)} />
       <SectionRenderer sections={sections} locale={locale} settings={settings} messages={getMessages(locale)} />
     </>
   )

@@ -21,6 +21,8 @@ export interface Cart {
   discount_total: Money
   grand_total: Money
   can_checkout: boolean
+  coupon_code: string | null
+  coupon_error: string | null
 }
 
 /** Result of a cart call: the new cart, or the first validation message to show next to the control. */
@@ -44,9 +46,13 @@ function announce(cart: Cart | null): void {
   window.dispatchEvent(new CustomEvent(CART_CHANGED, { detail: itemCount(cart) }))
 }
 
-export async function fetchCart(): Promise<CartResult> {
+export async function fetchCart(preview: { zoneId?: string; coupon?: string } = {}): Promise<CartResult> {
+  const query = new URLSearchParams()
+  if (preview.zoneId) query.set('delivery_zone_id', preview.zoneId)
+  if (preview.coupon) query.set('coupon_code', preview.coupon)
+
   try {
-    const result = await read(await fetch('/api/cart', { cache: 'no-store' }), 'Could not load the cart.')
+    const result = await read(await fetch(`/api/cart${query.size ? `?${query}` : ''}`, { cache: 'no-store' }), 'Could not load the cart.')
     if (result.ok) announce(result.cart)
 
     return result
