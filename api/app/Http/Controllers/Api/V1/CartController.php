@@ -42,13 +42,14 @@ class CartController extends Controller
      * Show a cart
      *
      * Lines are priced by the server on every read; `available` and `issue` flag lines that cannot be sold now.
-     * `?delivery_zone_id=` previews that zone's shipping fee.
+     * `?delivery_zone_id=` previews that zone's shipping fee and `?coupon_code=` a coupon (`coupon_error` says why it does not apply).
      */
     public function show(Request $request, string $token): JsonResponse
     {
         $zone = $request->integer('delivery_zone_id') ?: null;
+        $coupon = $request->query('coupon_code');
 
-        return response()->json(['data' => ['token' => $token] + $this->view($this->known($token), $zone)]);
+        return response()->json(['data' => ['token' => $token] + $this->view($this->known($token), $zone, is_string($coupon) ? $coupon : null)]);
     }
 
     /**
@@ -133,9 +134,9 @@ class CartController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function view(string $token, ?int $zoneId = null): array
+    private function view(string $token, ?int $zoneId = null, ?string $couponCode = null): array
     {
-        $quote = $this->pricing->quote($this->carts->items($token), zoneId: $zoneId);
+        $quote = $this->pricing->quote($this->carts->items($token), zoneId: $zoneId, couponCode: $couponCode);
         $money = fn (int $amount): array => ['amount' => $amount, 'currency' => $quote['currency']];
 
         return [
@@ -146,6 +147,8 @@ class CartController extends Controller
                 'options' => (object) $line['options'],
                 'quantity' => $line['quantity'],
                 'unit_price' => $money($line['unit_price']),
+                'discount_amount' => $money($line['discount_amount']),
+                'tax_amount' => $money($line['tax_amount']),
                 'line_total' => $money($line['line_total']),
                 'available' => $line['available'],
                 'issue' => $line['issue'],
@@ -155,6 +158,8 @@ class CartController extends Controller
             'tax_total' => $money($quote['tax_total']),
             'discount_total' => $money($quote['discount_total']),
             'grand_total' => $money($quote['grand_total']),
+            'coupon_code' => $quote['coupon']?->code,
+            'coupon_error' => $quote['coupon_error'],
             'can_checkout' => $quote['valid'],
         ];
     }

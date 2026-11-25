@@ -26,6 +26,7 @@ class OrderResource extends JsonResource
             'payment_status' => $this->payment_status,
             'customer_id' => $this->customer_id,
             'delivery_zone_id' => $this->delivery_zone_id,
+            'coupon_code' => $this->coupon_code,
             'delivery' => $this->whenLoaded('delivery', fn () => $this->delivery === null ? null : [
                 'courier_id' => $this->delivery->courier_id,
                 'tracking_number' => $this->delivery->tracking_number,
@@ -61,7 +62,9 @@ class OrderResource extends JsonResource
                 'options' => (object) ($item->options ?? []),
                 'quantity' => $item->quantity,
                 'unit_price' => $money($item->unit_price),
+                'discount_amount' => $money($item->discount_amount),
                 'tax_amount' => $money($item->tax_amount),
+                'tax_rate_bp' => $item->tax_rate_bp,
                 'line_total' => $money($item->line_total),
             ])->all()),
         ];

@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * `description` is rich-text HTML, sanitised on every write.
  */
 #[Fillable([
-    'category_id', 'brand_id', 'name', 'slug', 'short_description', 'description',
+    'category_id', 'brand_id', 'tax_rate_id', 'name', 'slug', 'short_description', 'description',
     'has_variants', 'seo_title', 'seo_description',
 ])]
 class Product extends Model

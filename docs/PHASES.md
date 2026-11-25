@@ -39,7 +39,7 @@ Phases 0-17 above are inherited from the business site (all done). E0-E14 are th
 | [x] | E5 | Payment framework: interfaces, registry, COD driver | M | ES3 | feature/phase-e5-payment-framework |
 | [x] | E6 | Cart, checkout, order lifecycle API | L | ES4 | feature/phase-e6-cart-checkout-orders |
 | [x] | E7 | Delivery, COD remittance, reconciliation, reports API | M | ES4 | feature/phase-e7-delivery-cod-remittance-reconciliation-reports |
-| [ ] | E8 | Tax, coupons, wishlist, reviews API | M | ES5 | feature/phase-e8-tax-coupons-wishlist-reviews |
+| [x] | E8 | Tax, coupons, wishlist, reviews API | M | ES5 | feature/phase-e8-tax-coupons-wishlist-reviews |
 | [ ] | E9 | Admin: catalog, suppliers, purchasing, promotions | M | ES5 | feature/phase-e9-admin-catalog-suppliers-purchasing-promotions |
 | [ ] | E10 | Admin: stock, check-in, orders, returns, reconciliation, payment methods | L | ES6 | feature/phase-e10-admin-stock-orders-returns-reconciliation-payment-methods |
 | [ ] | E11 | Portal theme: ecommerce design system | M | ES6 | feature/phase-e11-portal-theme-ecommerce-design-system |
