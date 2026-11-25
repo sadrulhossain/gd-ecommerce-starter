@@ -24,6 +24,7 @@ class CheckoutRequest extends FormRequest
             'district' => ['nullable', 'string', 'max:100'],
             'postal_code' => ['nullable', 'string', 'max:20'],
             'note' => ['nullable', 'string', 'max:1000'],
+            'coupon_code' => ['nullable', 'string', 'max:40'],
             'delivery_zone_id' => ['nullable', 'integer', Rule::exists('delivery_zones', 'id')->where('is_active', true)],
             'payment_method' => ['required', 'string', Rule::exists('payment_methods', 'code')->where('is_enabled', true)],
         ];

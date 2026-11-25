@@ -27,6 +27,7 @@ class OrderService
         private readonly PricingService $pricing,
         private readonly StockService $stock,
         private readonly PaymentManager $payments,
+        private readonly CouponService $coupons,
     ) {}
 
     /**
@@ -36,7 +37,8 @@ class OrderService
     public function place(array $items, array $data, ?Customer $customer): Order
     {
         $zoneId = isset($data['delivery_zone_id']) ? (int) $data['delivery_zone_id'] : null;
-        $quote = $this->pricing->quote($items, strict: true, zoneId: $zoneId);
+        $couponCode = isset($data['coupon_code']) ? (string) $data['coupon_code'] : null;
+        $quote = $this->pricing->quote($items, strict: true, zoneId: $zoneId, couponCode: $couponCode);
 
         return DB::transaction(function () use ($quote, $data, $customer, $zoneId): Order {
             $order = new Order;
@@ -51,6 +53,7 @@ class OrderService
                 'shipping_total' => $quote['shipping_total'],
                 'tax_total' => $quote['tax_total'],
                 'discount_total' => $quote['discount_total'],
+                'coupon_code' => $quote['coupon']?->code,
                 'grand_total' => $quote['grand_total'],
                 'contact_name' => $data['contact_name'],
                 'contact_phone' => $data['contact_phone'],
@@ -71,10 +74,15 @@ class OrderService
                     'options' => $line['options'] ?: null,
                     'quantity' => $line['quantity'],
                     'unit_price' => $line['unit_price'],
+                    'discount_amount' => $line['discount_amount'],
                     'tax_rate_bp' => $line['tax_rate_bp'],
                     'tax_amount' => $line['tax_amount'],
                     'line_total' => $line['line_total'],
                 ])->save();
+            }
+
+            if ($quote['coupon'] !== null) {
+                $this->coupons->redeem($quote['coupon'], $order, $quote['discount_total']);
             }
 
             $event = $this->payments->initiate($order->payment_method, "order-{$order->id}-initiate", 'orders', $order->id, $order->grand_total);
@@ -132,6 +140,7 @@ class OrderService
                 }
             }
 
+            $this->coupons->release($order);
             $order->forceFill(['status' => Order::CANCELLED, 'cancelled_at' => now(), 'cancel_reason' => $reason])->save();
 
             return $order;

@@ -18,6 +18,7 @@ class OrderItem extends Model
             'options' => 'array',
             'quantity' => 'integer',
             'unit_price' => 'integer',
+            'discount_amount' => 'integer',
             'tax_rate_bp' => 'integer',
             'tax_amount' => 'integer',
             'line_total' => 'integer',

@@ -20,6 +20,7 @@ class StoreProductRequest extends FormRequest
         return [
             'category_id' => ['required', 'integer', Rule::exists('product_categories', 'id')],
             'brand_id' => ['nullable', 'integer', Rule::exists('brands', 'id')],
+            'tax_rate_id' => ['nullable', 'integer', Rule::exists('tax_rates', 'id')],
             'name' => ['required', 'string', 'max:200'],
             'slug' => ['nullable', 'string', 'max:220', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('products', 'slug')],
             'short_description' => ['nullable', 'string', 'max:500'],

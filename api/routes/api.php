@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CodRemittanceController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\ContactMessageController;
+use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\CourierController;
 use App\Http\Controllers\Api\V1\CustomerAuthController;
 use App\Http\Controllers\Api\V1\CustomerOrderController;
@@ -36,6 +37,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\PurchaseOrderLineController;
 use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SectionController;
 use App\Http\Controllers\Api\V1\SectionImageController;
@@ -47,11 +49,13 @@ use App\Http\Controllers\Api\V1\SettingImageController;
 use App\Http\Controllers\Api\V1\StockController;
 use App\Http\Controllers\Api\V1\StockDocumentController;
 use App\Http\Controllers\Api\V1\SupplierController;
+use App\Http\Controllers\Api\V1\TaxRateController;
 use App\Http\Controllers\Api\V1\TeamMemberController;
 use App\Http\Controllers\Api\V1\TeamMemberImageController;
 use App\Http\Controllers\Api\V1\TestimonialController;
 use App\Http\Controllers\Api\V1\TestimonialImageController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\WishlistController;
 use App\Http\Middleware\LocalizePublicResponse;
 use App\Models\StockDocument;
 use Illuminate\Support\Facades\Route;
@@ -94,6 +98,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('public/carts/{token}/checkout', [CartController::class, 'checkout'])->middleware('throttle:checkout');
         Route::get('public/orders/{number}', [CustomerOrderController::class, 'lookup']);
         Route::get('public/delivery-zones', [DeliveryZoneController::class, 'publicIndex']);
+        Route::get('public/products/{slug}/reviews', [ReviewController::class, 'publicIndex']);
     });
     Route::middleware('throttle:login')->group(function (): void {
         Route::post('customer/register', [CustomerAuthController::class, 'register']);
@@ -105,6 +110,10 @@ Route::prefix('v1')->group(function (): void {
         Route::get('orders', [CustomerOrderController::class, 'index']);
         Route::get('orders/{number}', [CustomerOrderController::class, 'show']);
         Route::post('orders/{number}/cancel', [CustomerOrderController::class, 'cancel']);
+        Route::get('wishlist', [WishlistController::class, 'index']);
+        Route::put('wishlist/{productId}', [WishlistController::class, 'store']);
+        Route::delete('wishlist/{productId}', [WishlistController::class, 'destroy']);
+        Route::post('products/{slug}/reviews', [ReviewController::class, 'store']);
     });
     // Authenticated routes. Module routes add ->middleware('can:<permission>').
     Route::middleware('auth:api')->group(function (): void {
@@ -231,6 +240,21 @@ Route::prefix('v1')->group(function (): void {
         Route::get('reports/sales', [ReportController::class, 'sales'])->middleware('can:reports.view');
         Route::get('reports/cod-reconciliation', [ReportController::class, 'codReconciliation'])->middleware('can:reports.view');
         Route::get('reports/stock-valuation', [ReportController::class, 'stockValuation'])->middleware('can:reports.view');
+
+        // Promotions: tax rates, coupons, review moderation
+        Route::get('tax-rates', [TaxRateController::class, 'index'])->middleware('can:tax-rates.view');
+        Route::post('tax-rates', [TaxRateController::class, 'store']);
+        Route::patch('tax-rates/{tax_rate}', [TaxRateController::class, 'update']);
+        Route::delete('tax-rates/{tax_rate}', [TaxRateController::class, 'destroy'])->middleware('can:tax-rates.manage');
+        Route::get('coupons', [CouponController::class, 'index'])->middleware('can:coupons.view');
+        Route::get('coupons/{coupon}', [CouponController::class, 'show'])->middleware('can:coupons.view');
+        Route::post('coupons', [CouponController::class, 'store']);
+        Route::patch('coupons/{coupon}', [CouponController::class, 'update']);
+        Route::delete('coupons/{coupon}', [CouponController::class, 'destroy'])->middleware('can:coupons.delete');
+        Route::get('reviews', [ReviewController::class, 'index'])->middleware('can:reviews.view');
+        Route::post('reviews/{review}/approve', [ReviewController::class, 'approve'])->middleware('can:reviews.moderate');
+        Route::post('reviews/{review}/reject', [ReviewController::class, 'reject'])->middleware('can:reviews.moderate');
+        Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->middleware('can:reviews.delete');
 
         // Stock documents (draft, then posted): damages, supplier-returns, adjustments, stock-counts share one controller
         foreach (StockDocument::TYPES as $type => $config) {

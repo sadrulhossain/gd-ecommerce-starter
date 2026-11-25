@@ -19,6 +19,7 @@ class UpdateProductRequest extends FormRequest
         return [
             'category_id' => ['sometimes', 'required', 'integer', Rule::exists('product_categories', 'id')],
             'brand_id' => ['sometimes', 'nullable', 'integer', Rule::exists('brands', 'id')],
+            'tax_rate_id' => ['sometimes', 'nullable', 'integer', Rule::exists('tax_rates', 'id')],
             'name' => ['sometimes', 'required', 'string', 'max:200'],
             'slug' => [
                 'sometimes', 'required', 'string', 'max:220', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
