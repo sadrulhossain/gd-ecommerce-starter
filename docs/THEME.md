@@ -24,3 +24,10 @@ Admin theme: unchanged. Portal: change only `packages/tokens/portal.css` and the
 
 ## Text scale
 Both themes override the whole Tailwind text scale (`--text-xs` ... `--text-7xl`) in their token file. Admin: every size one step smaller than the default scale (base 13px). Portal: every size two steps smaller (base 12px). Change a size there, not in a component.
+
+## Portal shop design system (E11)
+- Tokens added to `packages/tokens/portal.css`: `sale`, `sale-soft` (price cuts, AA on white and canvas), `star`, `star-empty` (ratings, decorative only). Everything else reuses the existing brand, accent, ink, line, radius and shadow tokens. The admin theme is untouched.
+- Components in `web/portal/components/shop` (import from `components/shop`): `Button` / `ButtonLink` (primary, secondary, accent, ghost; sizes sm, md, lg), `Price` (compare-at and percent off), `Badge`, `Rating`, `StockStatus`, `QuantityStepper` (client), `ProductCard`, `EmptyState`, `Breadcrumbs`. Pure helpers (percent off, rating rounding, stock state, quantity clamp) are in `web/portal/lib/shop.ts`.
+- Money is the API's `{amount, currency}` in minor units, formatted only with `formatMoney` from `@gd/api-client` (re-exported by `lib/shop.ts`); never format an amount by hand.
+- Rules: logical utilities only (RTL safe), white text only on `brand-700` or darker, state is never colour alone (stock and sale show text), the card is one link (the product name stretched over the card).
+- Preview: `/showcase` (dev only) shows every component; `web/portal/e2e/a11y.spec.ts` scans it with axe (zero violations).

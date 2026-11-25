@@ -1,7 +1,12 @@
 import { notFound } from 'next/navigation'
 import type { components } from '@gd/api-types'
 
+import { Badge, Breadcrumbs, Button, ButtonLink, EmptyState, Price, ProductCard, Rating, StockStatus } from '../../../components/shop'
+import { QuantityDemo } from './QuantityDemo'
+
 export const metadata = { title: 'Portal theme' }
+
+const bdt = (amount: number) => ({ amount, currency: 'BDT' })
 
 // Full class names on purpose: Tailwind only generates utilities it can find as literal strings.
 const brand = [
@@ -91,6 +96,42 @@ export default function ShowcasePage() {
           <button className="rounded-md bg-brand-700 px-5 py-2.5 text-white hover:bg-brand-800">Primary</button>
           <button className="rounded-md border border-line bg-surface px-5 py-2.5 hover:bg-brand-50">Secondary</button>
         </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl">Shop components (E11)</h2>
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Shoes', href: '/' }, { label: 'Trail runner' }]} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button>Add to cart</Button>
+          <Button variant="secondary">Wishlist</Button>
+          <Button variant="accent">Buy now</Button>
+          <Button variant="ghost">Details</Button>
+          <Button disabled>Unavailable</Button>
+          <ButtonLink href="/" size="sm">Link button</ButtonLink>
+          <QuantityDemo />
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge>New</Badge>
+          <Badge tone="sale">Sale</Badge>
+          <Badge tone="success">Eco</Badge>
+          <Badge tone="warning">Few left</Badge>
+          <Badge tone="dark">Exclusive</Badge>
+          <Rating value={4.5} count={128} />
+          <Rating value={3} />
+          <StockStatus onHand={40} />
+          <StockStatus onHand={3} />
+          <StockStatus onHand={0} />
+        </div>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <ProductCard product={{ name: 'Trail runner', href: '/', brand: 'Northline', price: bdt(450000), compareAt: bdt(600000), rating: 4.5, reviewCount: 128, isNew: true }} />
+          <ProductCard product={{ name: 'Canvas tote', href: '/', price: bdt(120000), priceFrom: true, rating: 3.5, reviewCount: 12, stock: 'low' }} />
+          <ProductCard product={{ name: 'Wool scarf', href: '/', brand: 'Fjord', price: bdt(89000), stock: 'out' }} />
+          <ProductCard product={{ name: 'Water bottle', href: '/', price: bdt(65000) }} />
+        </div>
+        <Price price={bdt(450000)} compareAt={bdt(600000)} size="lg" />
+        <EmptyState title="Your cart is empty" action={<ButtonLink href="/">Keep shopping</ButtonLink>}>
+          Add something you like and it will show up here.
+        </EmptyState>
       </section>
 
       <section className="space-y-3">
