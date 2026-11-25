@@ -4,11 +4,14 @@ use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\BrandImageController;
 use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\CodRemittanceController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\ContactMessageController;
+use App\Http\Controllers\Api\V1\CourierController;
 use App\Http\Controllers\Api\V1\CustomerAuthController;
 use App\Http\Controllers\Api\V1\CustomerOrderController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\DeliveryZoneController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\GalleryItemController;
 use App\Http\Controllers\Api\V1\GalleryItemImageController;
@@ -32,6 +35,7 @@ use App\Http\Controllers\Api\V1\ProductVariantController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\PurchaseOrderLineController;
+use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SectionController;
 use App\Http\Controllers\Api\V1\SectionImageController;
@@ -81,14 +85,15 @@ Route::prefix('v1')->group(function (): void {
     Route::post('contact', [ContactController::class, 'store'])->middleware('throttle:contact');
 
     // Storefront: carts (Redis, by token), checkout, guest order lookup, customer accounts (separate guard).
-    Route::middleware('throttle:60,1')->group(function (): void {
+    Route::middleware('throttle:storefront')->group(function (): void {
         Route::post('public/carts', [CartController::class, 'store']);
         Route::get('public/carts/{token}', [CartController::class, 'show']);
         Route::post('public/carts/{token}/items', [CartController::class, 'addItem']);
         Route::patch('public/carts/{token}/items/{variantId}', [CartController::class, 'updateItem']);
         Route::delete('public/carts/{token}/items/{variantId}', [CartController::class, 'removeItem']);
-        Route::post('public/carts/{token}/checkout', [CartController::class, 'checkout'])->middleware('throttle:10,1');
+        Route::post('public/carts/{token}/checkout', [CartController::class, 'checkout'])->middleware('throttle:checkout');
         Route::get('public/orders/{number}', [CustomerOrderController::class, 'lookup']);
+        Route::get('public/delivery-zones', [DeliveryZoneController::class, 'publicIndex']);
     });
     Route::middleware('throttle:login')->group(function (): void {
         Route::post('customer/register', [CustomerAuthController::class, 'register']);
@@ -207,6 +212,25 @@ Route::prefix('v1')->group(function (): void {
         Route::get('orders/{order}', [OrderController::class, 'show'])->middleware('can:orders.view');
         Route::post('orders/{order}/advance', [OrderController::class, 'advance'])->middleware('can:orders.update');
         Route::post('orders/{order}/cancel', [OrderController::class, 'cancel']);
+        Route::post('orders/{order}/delivery', [OrderController::class, 'assignDelivery']);
+
+        // Delivery: zones, couriers, COD remittances (draft, then posted) and reports
+        Route::get('delivery-zones', [DeliveryZoneController::class, 'index'])->middleware('can:delivery.view');
+        Route::post('delivery-zones', [DeliveryZoneController::class, 'store']);
+        Route::patch('delivery-zones/{zone}', [DeliveryZoneController::class, 'update']);
+        Route::delete('delivery-zones/{zone}', [DeliveryZoneController::class, 'destroy'])->middleware('can:delivery.manage');
+        Route::get('couriers', [CourierController::class, 'index'])->middleware('can:delivery.view');
+        Route::post('couriers', [CourierController::class, 'store']);
+        Route::patch('couriers/{courier}', [CourierController::class, 'update']);
+        Route::delete('couriers/{courier}', [CourierController::class, 'destroy'])->middleware('can:delivery.manage');
+        Route::get('cod-remittances', [CodRemittanceController::class, 'index'])->middleware('can:cod-remittances.view');
+        Route::get('cod-remittances/{cod_remittance}', [CodRemittanceController::class, 'show'])->middleware('can:cod-remittances.view');
+        Route::post('cod-remittances', [CodRemittanceController::class, 'store']);
+        Route::post('cod-remittances/{cod_remittance}/post', [CodRemittanceController::class, 'post']);
+        Route::delete('cod-remittances/{cod_remittance}', [CodRemittanceController::class, 'destroy'])->middleware('can:cod-remittances.delete');
+        Route::get('reports/sales', [ReportController::class, 'sales'])->middleware('can:reports.view');
+        Route::get('reports/cod-reconciliation', [ReportController::class, 'codReconciliation'])->middleware('can:reports.view');
+        Route::get('reports/stock-valuation', [ReportController::class, 'stockValuation'])->middleware('can:reports.view');
 
         // Stock documents (draft, then posted): damages, supplier-returns, adjustments, stock-counts share one controller
         foreach (StockDocument::TYPES as $type => $config) {

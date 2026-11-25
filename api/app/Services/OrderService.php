@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Customer;
+use App\Models\Delivery;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\StockMovement;
@@ -34,12 +35,14 @@ class OrderService
      */
     public function place(array $items, array $data, ?Customer $customer): Order
     {
-        $quote = $this->pricing->quote($items, strict: true);
+        $zoneId = isset($data['delivery_zone_id']) ? (int) $data['delivery_zone_id'] : null;
+        $quote = $this->pricing->quote($items, strict: true, zoneId: $zoneId);
 
-        return DB::transaction(function () use ($quote, $data, $customer): Order {
+        return DB::transaction(function () use ($quote, $data, $customer, $zoneId): Order {
             $order = new Order;
             $order->forceFill([
                 'number' => Order::nextNumber(),
+                'delivery_zone_id' => $zoneId,
                 'customer_id' => $customer?->id,
                 'lookup_token' => Str::random(40),
                 'payment_method' => $data['payment_method'],
@@ -96,7 +99,20 @@ class OrderService
                 }
             }
 
-            $order->forceFill(['status' => $next, "{$next}_at" => now()])->save();
+            $delivery = Delivery::query()->where('order_id', $order->id)->first();
+            if ($next === Order::SHIPPED && $delivery === null) {
+                throw ValidationException::withMessages(['delivery' => 'Assign a courier before shipping.']);
+            }
+
+            $changes = ['status' => $next, "{$next}_at" => now()];
+            if ($next === Order::DELIVERED && $delivery !== null) {
+                // The courier now holds the customer's cash (COD) until it is remitted.
+                $delivery->forceFill(['collected_amount' => $delivery->cod_amount, 'collected_at' => now()])->save();
+                if ($delivery->cod_amount > 0) {
+                    $changes['payment_status'] = 'paid';
+                }
+            }
+            $order->forceFill($changes)->save();
 
             return $order;
         });
