@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Courier;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
@@ -198,7 +199,12 @@ test('lifecycle: confirm takes stock, delivered is final', function () {
     $movement = StockMovement::where('type', 'sale')->firstOrFail();
     expect($movement->quantity)->toBe(-3)->and($movement->reference_type)->toBe('orders')->and($movement->reference_id)->toBe($id);
 
-    foreach (['packed', 'shipped', 'delivered'] as $status) {
+    $this->postJson("/api/v1/orders/{$id}/advance")->assertOk()->assertJsonPath('data.status', 'packed');
+    $this->postJson("/api/v1/orders/{$id}/advance")->assertUnprocessable()->assertInvalidFields(['delivery']);
+    Order::whereKey($id)->firstOrFail()->delivery()->forceCreate([
+        'order_id' => $id, 'courier_id' => Courier::create(['name' => 'Pathao'])->id, 'cod_amount' => 26000,
+    ]);
+    foreach (['shipped', 'delivered'] as $status) {
         $this->postJson("/api/v1/orders/{$id}/advance")->assertOk()->assertJsonPath('data.status', $status);
     }
     $this->postJson("/api/v1/orders/{$id}/advance")->assertUnprocessable()->assertInvalidFields(['status']);
@@ -238,4 +244,15 @@ test('orders seeder is idempotent', function () {
     $this->seed(CustomerClientSeeder::class);
 
     expect(Passport::client()->newQuery()->where('provider', 'customers')->count())->toBe(1);
+});
+
+test('browsing the cart does not use up the checkout throttle', function () {
+    $variant = shopVariant();
+    $token = newCart($this);
+    $this->postJson("/api/v1/public/carts/{$token}/items", ['variant_id' => $variant->id, 'quantity' => 1]);
+
+    foreach (range(1, 15) as $i) {
+        $this->getJson("/api/v1/public/carts/{$token}")->assertOk();
+    }
+    $this->postJson("/api/v1/public/carts/{$token}/checkout", checkoutBody())->assertCreated();
 });

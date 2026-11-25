@@ -12,6 +12,7 @@ use App\Services\CartService;
 use App\Services\OrderService;
 use App\Services\PricingService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -41,10 +42,13 @@ class CartController extends Controller
      * Show a cart
      *
      * Lines are priced by the server on every read; `available` and `issue` flag lines that cannot be sold now.
+     * `?delivery_zone_id=` previews that zone's shipping fee.
      */
-    public function show(string $token): JsonResponse
+    public function show(Request $request, string $token): JsonResponse
     {
-        return response()->json(['data' => ['token' => $token] + $this->view($this->known($token))]);
+        $zone = $request->integer('delivery_zone_id') ?: null;
+
+        return response()->json(['data' => ['token' => $token] + $this->view($this->known($token), $zone)]);
     }
 
     /**
@@ -129,9 +133,9 @@ class CartController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function view(string $token): array
+    private function view(string $token, ?int $zoneId = null): array
     {
-        $quote = $this->pricing->quote($this->carts->items($token));
+        $quote = $this->pricing->quote($this->carts->items($token), zoneId: $zoneId);
         $money = fn (int $amount): array => ['amount' => $amount, 'currency' => $quote['currency']];
 
         return [

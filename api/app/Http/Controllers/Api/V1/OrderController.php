@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\AssignDeliveryRequest;
 use App\Http\Requests\Api\V1\CancelOrderRequest;
 use App\Http\Resources\Api\V1\OrderResource;
 use App\Models\Order;
+use App\Services\DeliveryService;
 use App\Services\OrderService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -41,7 +43,20 @@ class OrderController extends Controller
      */
     public function show(Order $order): OrderResource
     {
-        return new OrderResource($order->load('items'));
+        return new OrderResource($order->load('items', 'delivery'));
+    }
+
+    /**
+     * Assign a courier
+     *
+     * For a packed or shipped order. Fixes the cash to collect (the grand total for COD). An order cannot
+     * be shipped until it has a courier.
+     */
+    public function assignDelivery(AssignDeliveryRequest $request, Order $order, DeliveryService $deliveries): OrderResource
+    {
+        $deliveries->assign($order, (int) $request->validated('courier_id'), $request->validated('tracking_number'));
+
+        return new OrderResource($order->refresh()->load('items', 'delivery'));
     }
 
     /**

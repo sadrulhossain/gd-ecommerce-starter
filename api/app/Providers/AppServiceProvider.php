@@ -60,6 +60,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         RateLimiter::for('login', fn (Request $request) => Limit::perMinute(10)->by($request->ip().'|'.strtolower((string) $request->input('email'))));
+        // Named, so each has its own counter (unnamed `throttle:N,M` limiters on one request share a key).
+        RateLimiter::for('storefront', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
+        RateLimiter::for('checkout', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('contact', fn (Request $request) => Limit::perMinute(config('contact.per_minute'))->by($request->ip()));
 
         Gate::policy(Role::class, RolePolicy::class);

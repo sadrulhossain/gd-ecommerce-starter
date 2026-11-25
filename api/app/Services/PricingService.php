@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\DeliveryZone;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\StockLevel;
@@ -19,7 +20,7 @@ class PricingService
      *
      * @throws ValidationException when $strict and any line cannot be sold
      */
-    public function quote(array $items, bool $strict = false): array
+    public function quote(array $items, bool $strict = false, ?int $zoneId = null): array
     {
         $variants = ProductVariant::query()->with('product')->whereIn('id', array_keys($items))->get()->keyBy('id');
         $stock = StockLevel::query()->whereIn('variant_id', array_keys($items))->pluck('on_hand', 'variant_id');
@@ -71,7 +72,7 @@ class PricingService
             throw ValidationException::withMessages($messages ?: ['items' => ['The cart is empty.']]);
         }
 
-        $shipping = $items === [] ? 0 : (int) config('shop.shipping_flat');
+        $shipping = $items === [] ? 0 : $this->shippingFee($zoneId);
 
         return [
             'lines' => $lines,
@@ -83,6 +84,14 @@ class PricingService
             'currency' => (string) config('payments.currency'),
             'valid' => $valid && $items !== [],
         ];
+    }
+
+    /** The active zone's fee, else the flat default. */
+    private function shippingFee(?int $zoneId): int
+    {
+        $fee = $zoneId === null ? null : DeliveryZone::query()->whereKey($zoneId)->where('is_active', true)->value('shipping_fee');
+
+        return $fee === null ? (int) config('shop.shipping_flat') : (int) $fee;
     }
 
     private function issue(?ProductVariant $variant, int $quantity, int $onHand): ?string
