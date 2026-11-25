@@ -160,3 +160,11 @@ singleton reference: Settings. Paths below are relative to `api/app` unless note
 - Posting (`StockDocumentService::post`) goes only through `StockService`: damage and supplier return remove `quantity` (positive on the document), an adjustment applies its signed non-zero `quantity`, a count calls `StockService::count()` (locks the level, writes one `count` movement for counted minus on-hand, none when equal) and stores `expected_quantity` per line (`variance` in the Resource). One negative result rolls the whole post back (422 on `lines`). Movement types: `damage`, `return_to_supplier`, `adjustment`, `count`; the document's `reason` is the movement `note`.
 - "Returns" here are returns to a supplier. Customer returns need orders and come with E6/E10.
 - Tests: `tests/Feature/Inventory/StockDocumentsTest.php`.
+
+## Payment framework (E5)
+- Code lives in `app/Payments`: `PaymentProvider` (interface: `code()`, `initiate()`, `refund()`), `PaymentRequest`/`PaymentResult` (value objects), `PaymentManager` (the only entry point) and `Drivers/<Name>Provider`. Nothing else calls a driver.
+- Registry: `config/payments.php` `drivers` maps method code to driver class. A new PSO/PSP is one driver class plus one registry line (plus a `payment_methods` row); checkout code does not change.
+- `payment_methods` (code, name, `is_enabled`, sort, `credentials`): credentials use the `encrypted:array` cast, are `#[Hidden]` and must never be logged or put in a Resource. A disabled or unknown method is a 422 on `payment_method`.
+- `payment_events` is the log: one row per action (`initiate`, `refund`), unique `idempotency_key`; repeating a key returns the stored event and never calls the driver again. Amount is BIGINT minor units plus `currency` (`config('payments.currency')`, BDT). `reference_type`/`reference_id` point at the order (E6).
+- COD (`CodProvider`) is the only v1 driver: `initiate` returns `pending` (cash is reconciled later, E10), `refund` returns `refunded`. Seeded by `PaymentMethodsSeeder` with `firstOrCreate`.
+- No HTTP routes yet: admin payment-method management comes with E10, checkout with E6. Tests: `tests/Feature/Payments`.
