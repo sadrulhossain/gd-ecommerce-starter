@@ -1,4 +1,5 @@
 import type { CrudConfig } from './components/CrudPage'
+import { formatMoney } from '@gd/api-client'
 import { ToggleCell } from './components/ToggleCell'
 
 /** "faqs.view" -> row "faqs", column "view". */
@@ -283,6 +284,123 @@ export const modules: CrudConfig[] = [
     fields: [
       { name: 'title', label: 'Title', required: true },
       { name: 'icon', label: 'Icon', type: 'icon', hint: 'Shown beside the menu entry in the sidebar.' },
+    ],
+  },
+
+  // Shop: plain CRUD modules. Products, purchase orders and reviews have their own pages (router.tsx).
+  {
+    key: 'product-categories',
+    image: true,
+    path: '/product-categories',
+    title: 'Product categories',
+    noun: 'Category',
+    endpoint: '/v1/product-categories',
+    rowLabel: (r) => String(r.name),
+    columns: [
+      { key: 'image', header: 'Image', render: thumb },
+      { key: 'name', header: 'Name', render: (r) => <span style={{ paddingLeft: `${Number(r.depth ?? 0) * 1.5}rem` }}>{String(r.name)}</span> },
+      { key: 'slug', header: 'Slug' },
+      { key: 'is_active', header: 'Active', render: (r) => yesNo(r.is_active) },
+    ],
+    fields: [
+      { name: 'name', label: 'Name', required: true },
+      { name: 'parent_id', label: 'Parent category', type: 'select', hint: 'Up to 3 levels deep.', optionsFrom: { endpoint: '/v1/product-categories', map: (c: { id: number; name: string }) => ({ value: c.id, label: c.name }) } },
+      { name: 'slug', label: 'Slug', hint: 'Leave empty to generate it from the name.' },
+      { name: 'description', label: 'Description', type: 'textarea' },
+      { name: 'sort_order', label: 'Order', type: 'number', initial: 0 },
+      { name: 'is_active', label: 'Active', type: 'checkbox', initial: true },
+    ],
+  },
+  {
+    key: 'brands',
+    image: true,
+    path: '/brands',
+    title: 'Brands',
+    noun: 'Brand',
+    endpoint: '/v1/brands',
+    rowLabel: (r) => String(r.name),
+    columns: [
+      { key: 'image', header: 'Logo', render: thumb },
+      { key: 'name', header: 'Name' },
+      { key: 'is_active', header: 'Active', render: (r) => yesNo(r.is_active) },
+    ],
+    fields: [
+      { name: 'name', label: 'Name', required: true },
+      { name: 'slug', label: 'Slug', hint: 'Leave empty to generate it from the name.' },
+      { name: 'description', label: 'Description', type: 'textarea' },
+      { name: 'is_active', label: 'Active', type: 'checkbox', initial: true },
+    ],
+  },
+  {
+    key: 'suppliers',
+    path: '/suppliers',
+    title: 'Suppliers',
+    noun: 'Supplier',
+    endpoint: '/v1/suppliers',
+    rowLabel: (r) => String(r.name),
+    columns: [
+      { key: 'code', header: 'Code' },
+      { key: 'name', header: 'Name' },
+      { key: 'phone', header: 'Phone' },
+      { key: 'is_active', header: 'Active', render: (r) => yesNo(r.is_active) },
+    ],
+    fields: [
+      { name: 'name', label: 'Name', required: true },
+      { name: 'code', label: 'Code', required: true, hint: 'Short and unique, for example ACME-01.' },
+      { name: 'contact_name', label: 'Contact person' },
+      { name: 'email', label: 'Email' },
+      { name: 'phone', label: 'Phone' },
+      { name: 'address', label: 'Address', type: 'textarea' },
+      { name: 'tax_number', label: 'Tax number' },
+      { name: 'payment_terms', label: 'Payment terms', type: 'textarea' },
+      { name: 'notes', label: 'Notes', type: 'textarea' },
+      { name: 'is_active', label: 'Active', type: 'checkbox', initial: true, hint: 'A supplier with purchase orders can be deactivated but not deleted.' },
+    ],
+  },
+  {
+    key: 'tax-rates',
+    path: '/tax-rates',
+    title: 'Tax rates',
+    noun: 'Tax rate',
+    endpoint: '/v1/tax-rates',
+    rowLabel: (r) => String(r.name),
+    columns: [
+      { key: 'name', header: 'Name' },
+      { key: 'rate_bp', header: 'Rate', render: (r) => `${Number(r.rate_bp) / 100}%` },
+      { key: 'is_default', header: 'Default', render: (r) => yesNo(r.is_default) },
+      { key: 'is_active', header: 'Active', render: (r) => yesNo(r.is_active) },
+    ],
+    fields: [
+      { name: 'name', label: 'Name', required: true },
+      { name: 'rate_bp', label: 'Rate (basis points)', type: 'number', required: true, hint: '100 = 1%, 1500 = 15%.' },
+      { name: 'is_default', label: 'Default rate', type: 'checkbox', initial: false, hint: 'Applies to products without a rate of their own.' },
+      { name: 'is_active', label: 'Active', type: 'checkbox', initial: true },
+    ],
+  },
+  {
+    key: 'coupons',
+    path: '/coupons',
+    title: 'Coupons',
+    noun: 'Coupon',
+    endpoint: '/v1/coupons',
+    rowLabel: (r) => String(r.code),
+    columns: [
+      { key: 'code', header: 'Code' },
+      { key: 'type', header: 'Type' },
+      { key: 'value', header: 'Value', render: (r) => (r.type === 'percent' ? `${Number(r.value) / 100}%` : formatMoney({ amount: Number(r.value), currency: 'BDT' })) },
+      { key: 'used_count', header: 'Used', render: (r) => (r.usage_limit ? `${r.used_count} / ${r.usage_limit}` : String(r.used_count)) },
+      { key: 'is_active', header: 'Active', render: (r) => yesNo(r.is_active) },
+    ],
+    fields: [
+      { name: 'code', label: 'Code', required: true, hint: 'Letters, numbers, dashes. Stored in capitals.' },
+      { name: 'type', label: 'Type', type: 'select', required: true, options: [{ value: 'percent', label: 'Percent' }, { value: 'fixed', label: 'Fixed amount' }] },
+      { name: 'value', label: 'Value', type: 'number', required: true, hint: 'Percent: basis points (1000 = 10%). Fixed: minor units (1000 = 10.00).' },
+      { name: 'min_subtotal', label: 'Minimum subtotal', type: 'money', hint: 'Orders below this cannot use the coupon.' },
+      { name: 'max_discount', label: 'Maximum discount', type: 'money', hint: 'Caps a percent coupon. Cannot be cleared once set.' },
+      { name: 'usage_limit', label: 'Usage limit', type: 'number', hint: 'Total uses. Leave empty for no limit.' },
+      { name: 'starts_at', label: 'Starts', type: 'datetime' },
+      { name: 'ends_at', label: 'Ends', type: 'datetime' },
+      { name: 'is_active', label: 'Active', type: 'checkbox', initial: true },
     ],
   },
 ]

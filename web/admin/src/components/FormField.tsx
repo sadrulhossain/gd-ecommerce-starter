@@ -1,8 +1,9 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
+import { fromMinor, toMinor } from '@gd/api-client'
 import { Icon, ICON_OPTIONS } from './Icon'
 import { RichText } from './RichText'
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'checkbox' | 'select' | 'password' | 'checkgroup' | 'richtext' | 'date' | 'datetime' | 'icon'
+export type FieldType = 'text' | 'textarea' | 'number' | 'checkbox' | 'select' | 'password' | 'checkgroup' | 'richtext' | 'date' | 'datetime' | 'icon' | 'money'
 
 export interface FieldOption {
   value: string | number
@@ -94,6 +95,8 @@ export function FormField({ label, name, type = 'text', value, onChange, error, 
     input = <input {...common} type="date" className={control} value={String(value ?? '').slice(0, 10)} onChange={(e) => onChange(e.target.value)} />
   } else if (type === 'datetime') {
     input = <input {...common} type="datetime-local" className={control} value={toLocalInput(value)} onChange={(e) => onChange(fromLocalInput(e.target.value))} />
+  } else if (type === 'money') {
+    input = <MoneyInput {...common} value={value} onChange={onChange} />
   } else if (type === 'number') {
     input = (
       <input
@@ -200,5 +203,27 @@ function CheckGroup({
         </tbody>
       </table>
     </div>
+  )
+}
+
+/**
+ * An amount typed in major units ("12.50") that the form stores as integer minor units (1250). The text is kept
+ * locally so a half-typed "12." is not rewritten; an invalid text stores nothing.
+ */
+function MoneyInput({ value, onChange, ...common }: { value: unknown; onChange: (value: unknown) => void; id: string; name: string; required?: boolean; 'aria-invalid'?: boolean; 'aria-describedby'?: string }) {
+  const [text, setText] = useState(typeof value === 'number' ? fromMinor(value) : '')
+
+  return (
+    <input
+      {...common}
+      type="text"
+      inputMode="decimal"
+      className={control}
+      value={text}
+      onChange={(e) => {
+        setText(e.target.value)
+        onChange(e.target.value.trim() === '' ? null : (toMinor(e.target.value) ?? value))
+      }}
+    />
   )
 }
