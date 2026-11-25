@@ -28,6 +28,20 @@ class PaymentMethodController extends Controller
     }
 
     /**
+     * List payment methods for checkout (public)
+     *
+     * Enabled methods whose driver is registered, in display order: `code` and `name` only. No authentication.
+     */
+    public function publicIndex(): JsonResponse
+    {
+        $drivers = (array) config('payments.drivers');
+
+        return response()->json(['data' => PaymentMethod::query()->where('is_enabled', true)->orderBy('sort')->orderBy('id')->get()
+            ->filter(fn (PaymentMethod $m) => array_key_exists($m->code, $drivers))
+            ->map(fn (PaymentMethod $m) => ['code' => $m->code, 'name' => $m->name])->values()->all()]);
+    }
+
+    /**
      * Add a payment method
      *
      * `code` must be a registered driver and not yet used.

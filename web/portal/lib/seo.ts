@@ -86,6 +86,18 @@ export function localBusinessJsonLd(settings: Settings, locale: string): Record<
   })
 }
 
+/** schema.org WebSite with a search action that lands on the shop's search (`/shop?q=`). */
+export function websiteJsonLd(settings: Settings, locale: string): Record<string, unknown> {
+  return clean({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: settings.site_name,
+    url: absolute(localePath(locale)),
+    inLanguage: locale,
+    potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: `${absolute(localePath(locale, '/shop'))}?q={search_term_string}` }, 'query-input': 'required name=search_term_string' },
+  })
+}
+
 /** schema.org Article for a blog post; the publisher is the business. */
 export function articleJsonLd(post: Post, settings: Settings, locale: string): Record<string, unknown> {
   const url = absolute(localePath(locale, `/blog/${post.slug}`))
@@ -105,6 +117,11 @@ export function articleJsonLd(post: Post, settings: Settings, locale: string): R
     author: { '@type': 'Organization', name: settings.site_name },
     publisher: { '@type': 'Organization', name: settings.site_name },
   })
+}
+
+/** Metadata for a personal page (cart, checkout, account, order): titled and canonical, but kept out of search results. */
+export function privateMetadata({ locale, path, siteName, title }: { locale: string; path: string; siteName: string; title: string }): Metadata {
+  return { ...pageMetadata({ locale, path, siteName, title }), robots: { index: false, follow: false } }
 }
 
 /** schema.org Product with one Offer per variant (price in major units, as schema.org expects). */

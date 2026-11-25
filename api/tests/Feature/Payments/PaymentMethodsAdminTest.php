@@ -116,3 +116,15 @@ it('seeds payment-method permissions once', function () {
 
     expect(Permission::where('name', 'payment-methods.view')->count())->toBe(1);
 });
+
+it('lists only enabled methods with a registered driver for checkout, without authentication', function () {
+    PaymentMethod::create(['code' => 'fake', 'name' => 'Fake pay', 'is_enabled' => false, 'credentials' => ['token' => 'secret-token']]);
+
+    $response = $this->getJson('/api/v1/public/payment-methods')->assertOk()->assertExactJson(['data' => [['code' => 'cod', 'name' => PaymentMethod::where('code', 'cod')->value('name')]]]);
+    expect($response->getContent())->not->toContain('secret-token');
+
+    PaymentMethod::where('code', 'fake')->update(['is_enabled' => true, 'sort' => 999]);
+    PaymentMethod::create(['code' => 'ghost', 'name' => 'No driver']);
+
+    $this->getJson('/api/v1/public/payment-methods')->assertOk()->assertJsonPath('data.*.code', ['cod', 'fake']);
+});

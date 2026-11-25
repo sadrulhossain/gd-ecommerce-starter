@@ -18,6 +18,7 @@ export function Header({ locale, settings, sections, messages }: { locale: strin
   ]
   const shop = localePath(locale, '/shop')
   const cart = localePath(locale, '/cart')
+  const account = localePath(locale, '/account')
   const blog = localePath(locale, '/blog')
   const contact = localePath(locale, '/contact')
   const switcher = locales.length > 1 && <LanguageSwitcher current={locale} label={messages.language.label} locales={locales} unprefixed={defaultLocale} />
@@ -50,6 +51,9 @@ export function Header({ locale, settings, sections, messages }: { locale: strin
           <Link href={blog} className="rounded-full px-3 py-2 text-[0.95rem] font-medium text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-700">
             {messages.nav.blog}
           </Link>
+          <Link href={account} className="rounded-full px-3 py-2 text-[0.95rem] font-medium text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-700">
+            {messages.nav.account}
+          </Link>
           <CartLink href={cart} label={messages.nav.cart} className="text-[0.95rem]" />
           {switcher}
           <Link href={contact} className="ms-2 rounded-full bg-brand-600 px-5 py-2.5 text-[0.95rem] font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lift">
@@ -73,6 +77,9 @@ export function Header({ locale, settings, sections, messages }: { locale: strin
             </Link>
             <Link href={blog} className="rounded-md px-4 py-3 text-lg font-medium text-ink hover:bg-brand-50">
               {messages.nav.blog}
+            </Link>
+            <Link href={account} className="rounded-md px-4 py-3 text-lg font-medium text-ink hover:bg-brand-50">
+              {messages.nav.account}
             </Link>
             <CartLink href={cart} label={messages.nav.cart} className="rounded-md px-4 py-3 text-lg text-ink" />
             <Link href={contact} className="mt-2 rounded-full bg-brand-600 px-5 py-3 text-center text-lg font-semibold text-white">

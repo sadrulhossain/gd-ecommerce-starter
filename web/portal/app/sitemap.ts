@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...sections.flatMap((s) => (SECTION_PAGES[s.key] ? [{ path: SECTION_PAGES[s.key]! }] : [])),
     { path: '/blog' },
     { path: '/shop' },
+    { path: '/track' },
     { path: '/contact' },
     { path: '/privacy' },
     { path: '/terms' },

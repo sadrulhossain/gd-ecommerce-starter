@@ -100,6 +100,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('public/carts/{token}/checkout', [CartController::class, 'checkout'])->middleware('throttle:checkout');
         Route::get('public/orders/{number}', [CustomerOrderController::class, 'lookup']);
         Route::get('public/delivery-zones', [DeliveryZoneController::class, 'publicIndex']);
+        Route::get('public/payment-methods', [PaymentMethodController::class, 'publicIndex']);
         Route::get('public/products/{slug}/reviews', [ReviewController::class, 'publicIndex']);
     });
     Route::middleware('throttle:login')->group(function (): void {
