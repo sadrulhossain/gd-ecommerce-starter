@@ -37,7 +37,7 @@ Phases 0-17 above are inherited from the business site (all done). E0-E14 are th
 | [x] | E3 | Check-in (goods receipt) and stock ledger | L | ES2 | feature/phase-e3-check-in-stock-ledger |
 | [x] | E4 | Damage, returns, adjustments, stock counts API | M | ES3 | feature/phase-e4-damage-returns-adjustments-stock-counts |
 | [x] | E5 | Payment framework: interfaces, registry, COD driver | M | ES3 | feature/phase-e5-payment-framework |
-| [ ] | E6 | Cart, checkout, order lifecycle API | L | ES4 | feature/phase-e6-cart-checkout-orders |
+| [x] | E6 | Cart, checkout, order lifecycle API | L | ES4 | feature/phase-e6-cart-checkout-orders |
 | [ ] | E7 | Delivery, COD remittance, reconciliation, reports API | M | ES4 | feature/phase-e7-delivery-cod-remittance-reconciliation-reports |
 | [ ] | E8 | Tax, coupons, wishlist, reviews API | M | ES5 | feature/phase-e8-tax-coupons-wishlist-reviews |
 | [ ] | E9 | Admin: catalog, suppliers, purchasing, promotions | M | ES5 | feature/phase-e9-admin-catalog-suppliers-purchasing-promotions |

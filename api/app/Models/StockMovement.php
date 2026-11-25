@@ -18,6 +18,10 @@ class StockMovement extends Model
 
     public const COUNT = 'count';
 
+    public const SALE = 'sale';
+
+    public const SALE_CANCEL = 'sale_cancel';
+
     const UPDATED_AT = null;
 
     /** @return array<string, string> */

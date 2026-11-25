@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Customer;
 use App\Models\User;
 
 return [
@@ -46,6 +47,11 @@ return [
             'driver' => 'passport',
             'provider' => 'users',
         ],
+        // Storefront customers: a separate guard and provider from the admin users.
+        'customer' => [
+            'driver' => 'passport',
+            'provider' => 'customers',
+        ],
     ],
 
     /*
@@ -69,6 +75,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'customers' => [
+            'driver' => 'eloquent',
+            'model' => Customer::class,
         ],
 
         // 'users' => [

@@ -27,11 +27,13 @@ class DatabaseSeeder extends Seeder
             StockModuleSeeder::class,
             StockDocumentsModuleSeeder::class,
             PaymentMethodsSeeder::class,
+            OrdersModuleSeeder::class,
             ContactModuleSeeder::class,
             SettingsModuleSeeder::class,
             AccessModuleSeeder::class,
             SuperadminSeeder::class,
             OauthClientSeeder::class,
+            CustomerClientSeeder::class,
         ]);
     }
 }

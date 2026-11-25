@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\Api\V1\BrandController;
 use App\Http\Controllers\Api\V1\BrandImageController;
+use App\Http\Controllers\Api\V1\CartController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\ContactMessageController;
+use App\Http\Controllers\Api\V1\CustomerAuthController;
+use App\Http\Controllers\Api\V1\CustomerOrderController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\GalleryItemController;
@@ -16,6 +19,7 @@ use App\Http\Controllers\Api\V1\LogoutController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\MeMenusController;
 use App\Http\Controllers\Api\V1\MenuController;
+use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\PostImageController;
@@ -76,6 +80,27 @@ Route::prefix('v1')->group(function (): void {
     Route::get('public/captcha', [ContactController::class, 'captcha'])->middleware('throttle:30,1');
     Route::post('contact', [ContactController::class, 'store'])->middleware('throttle:contact');
 
+    // Storefront: carts (Redis, by token), checkout, guest order lookup, customer accounts (separate guard).
+    Route::middleware('throttle:60,1')->group(function (): void {
+        Route::post('public/carts', [CartController::class, 'store']);
+        Route::get('public/carts/{token}', [CartController::class, 'show']);
+        Route::post('public/carts/{token}/items', [CartController::class, 'addItem']);
+        Route::patch('public/carts/{token}/items/{variantId}', [CartController::class, 'updateItem']);
+        Route::delete('public/carts/{token}/items/{variantId}', [CartController::class, 'removeItem']);
+        Route::post('public/carts/{token}/checkout', [CartController::class, 'checkout'])->middleware('throttle:10,1');
+        Route::get('public/orders/{number}', [CustomerOrderController::class, 'lookup']);
+    });
+    Route::middleware('throttle:login')->group(function (): void {
+        Route::post('customer/register', [CustomerAuthController::class, 'register']);
+        Route::post('customer/login', [CustomerAuthController::class, 'login']);
+    });
+    Route::middleware('auth:customer')->prefix('customer')->group(function (): void {
+        Route::get('me', [CustomerAuthController::class, 'me']);
+        Route::post('logout', [CustomerAuthController::class, 'logout']);
+        Route::get('orders', [CustomerOrderController::class, 'index']);
+        Route::get('orders/{number}', [CustomerOrderController::class, 'show']);
+        Route::post('orders/{number}/cancel', [CustomerOrderController::class, 'cancel']);
+    });
     // Authenticated routes. Module routes add ->middleware('can:<permission>').
     Route::middleware('auth:api')->group(function (): void {
         Route::get('me', MeController::class);
@@ -176,6 +201,12 @@ Route::prefix('v1')->group(function (): void {
         Route::post('goods-receipts/{goods_receipt}/post', [GoodsReceiptController::class, 'post']);
         Route::get('stock/levels', [StockController::class, 'levels'])->middleware('can:stock.view');
         Route::get('stock/movements', [StockController::class, 'movements'])->middleware('can:stock.view');
+
+        // Orders (admin): lifecycle moves go through OrderService
+        Route::get('orders', [OrderController::class, 'index'])->middleware('can:orders.view');
+        Route::get('orders/{order}', [OrderController::class, 'show'])->middleware('can:orders.view');
+        Route::post('orders/{order}/advance', [OrderController::class, 'advance'])->middleware('can:orders.update');
+        Route::post('orders/{order}/cancel', [OrderController::class, 'cancel']);
 
         // Stock documents (draft, then posted): damages, supplier-returns, adjustments, stock-counts share one controller
         foreach (StockDocument::TYPES as $type => $config) {
