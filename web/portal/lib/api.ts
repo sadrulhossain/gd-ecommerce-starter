@@ -19,6 +19,8 @@ const TAGS: Record<string, string> = {
   gallery: 'gallery_items',
   categories: 'categories',
   posts: 'posts',
+  products: 'products',
+  'product-categories': 'product_categories',
 }
 
 export function tagFor(url: string): string[] {

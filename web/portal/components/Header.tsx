@@ -6,6 +6,7 @@ import { LanguageSwitcher } from './LanguageSwitcher'
 import { MobileNav } from './MobileNav'
 import { NavDropdown } from './NavDropdown'
 import { SiteLogo } from './SiteLogo'
+import { CartLink } from './shop/CartLink'
 
 /** Sticky glass header: logo, one link per visible section (the hero is the page top, contact has its own button), Blog, Contact. */
 export function Header({ locale, settings, sections, messages }: { locale: string; settings: Settings; sections: Section[]; messages: Messages }) {
@@ -15,6 +16,8 @@ export function Header({ locale, settings, sections, messages }: { locale: strin
       .filter((s) => s.key !== 'hero' && s.key !== 'contact')
       .map((s) => ({ key: s.key, label: s.title, href: SECTION_PAGES[s.key] ? localePath(locale, SECTION_PAGES[s.key]) : `${home}#${s.key}` })),
   ]
+  const shop = localePath(locale, '/shop')
+  const cart = localePath(locale, '/cart')
   const blog = localePath(locale, '/blog')
   const contact = localePath(locale, '/contact')
   const switcher = locales.length > 1 && <LanguageSwitcher current={locale} label={messages.language.label} locales={locales} unprefixed={defaultLocale} />
@@ -41,9 +44,13 @@ export function Header({ locale, settings, sections, messages }: { locale: strin
               ))}
             </NavDropdown>
           )}
+          <Link href={shop} className="rounded-full px-3 py-2 text-[0.95rem] font-medium text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-700">
+            {messages.nav.shop}
+          </Link>
           <Link href={blog} className="rounded-full px-3 py-2 text-[0.95rem] font-medium text-ink-muted transition-colors hover:bg-brand-50 hover:text-brand-700">
             {messages.nav.blog}
           </Link>
+          <CartLink href={cart} label={messages.nav.cart} className="text-[0.95rem]" />
           {switcher}
           <Link href={contact} className="ms-2 rounded-full bg-brand-600 px-5 py-2.5 text-[0.95rem] font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lift">
             {messages.nav.contact}
@@ -61,9 +68,13 @@ export function Header({ locale, settings, sections, messages }: { locale: strin
                 {l.label}
               </Link>
             ))}
+            <Link href={shop} className="rounded-md px-4 py-3 text-lg font-medium text-ink hover:bg-brand-50">
+              {messages.nav.shop}
+            </Link>
             <Link href={blog} className="rounded-md px-4 py-3 text-lg font-medium text-ink hover:bg-brand-50">
               {messages.nav.blog}
             </Link>
+            <CartLink href={cart} label={messages.nav.cart} className="rounded-md px-4 py-3 text-lg text-ink" />
             <Link href={contact} className="mt-2 rounded-full bg-brand-600 px-5 py-3 text-center text-lg font-semibold text-white">
               {messages.nav.contact}
             </Link>

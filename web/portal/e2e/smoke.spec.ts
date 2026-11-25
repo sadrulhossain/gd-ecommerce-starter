@@ -13,9 +13,10 @@ test('home loads with a heading and navigation', async ({ page }) => {
 
 test('language switch', async ({ page }) => {
   await page.goto('/')
-  const link = page.getByRole('list', { name: 'Language' }).getByRole('link').last()
+  const switcher = page.getByRole('list', { name: 'Language' })
+  test.skip((await switcher.count()) === 0, 'only one locale is enabled')
+  const link = switcher.getByRole('link').last()
   const lang = await link.getAttribute('lang')
-  test.skip(!lang, 'only one locale is enabled')
 
   await link.click()
   await expect(page).toHaveURL(new RegExp(`/${lang}$`))
