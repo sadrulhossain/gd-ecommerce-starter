@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 /** Public cart and checkout. A cart is a Redis list of variant ids and quantities behind an unguessable token. */
@@ -105,14 +106,26 @@ class CartController extends Controller
      */
     public function checkout(CheckoutRequest $request, string $token): JsonResponse
     {
-        $items = $this->carts->items($this->known($token));
-        if ($items === []) {
-            throw ValidationException::withMessages(['items' => ['The cart is empty.']]);
+        $this->known($token);
+
+        // One checkout per cart at a time: a double submit must not place the same cart twice.
+        $lock = Cache::lock('checkout:'.hash('sha256', $token), 60);
+        if (! $lock->get()) {
+            throw ValidationException::withMessages(['items' => ['This cart is already being checked out.']]);
         }
 
-        $customer = Auth::guard('customer')->user();
-        $order = $this->orders->place($items, $request->validated(), $customer instanceof Customer ? $customer : null);
-        $this->carts->clear($token);
+        try {
+            $items = $this->carts->items($token);
+            if ($items === []) {
+                throw ValidationException::withMessages(['items' => ['The cart is empty.']]);
+            }
+
+            $customer = Auth::guard('customer')->user();
+            $order = $this->orders->place($items, $request->validated(), $customer instanceof Customer ? $customer : null);
+            $this->carts->clear($token);
+        } finally {
+            $lock->release();
+        }
 
         return (new OrderResource($order))->additional(['lookup_token' => $order->lookup_token])->response()->setStatusCode(201);
     }

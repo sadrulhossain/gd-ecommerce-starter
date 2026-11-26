@@ -1,11 +1,16 @@
 # gd-ecommerce-starter
 
-A small-business website you can run on one VPS: a public portal (Next.js) in two languages, an admin app (React) to edit everything,
-and a Laravel API behind both. Content: hero, about us, sections, services, pricing (per service, hidden until switched on), team, testimonials, gallery, FAQ, blog, contact inbox, settings (logo, favicon, currency, social links), users and roles.
+A single-store online shop you can run on one VPS: a public storefront (Next.js), an admin app (React) and a Laravel API behind both. English only; money in BDT.
+
+- **Shop:** catalog with categories, brands and variants; cart; guest or account checkout; cash on delivery (offline methods plug in as drivers); delivery zones; tax and coupons; order tracking; wishlist and review APIs.
+- **Back office:** suppliers and purchase orders, goods receipts, an append-only stock ledger, damages, supplier returns, adjustments and counts, order lifecycle, couriers, COD remittance and reconciliation, reports, an audit trail of money changes.
+- **Content site:** the inherited pages (home sections, services, team, testimonials, gallery, FAQ, blog, contact, settings, users and roles).
+
+Not in v1: online payment gateways, courier APIs, more than one warehouse, customer returns, a customer address book, order emails.
 
 | Part | Where | Stack |
 |------|-------|-------|
-| API | `api/` | Laravel 13, PHP 8.5, PostgreSQL 18.6, Redis 8.10.3, Passport (OAuth 2 + PKCE), spatie/permission |
+| API | `api/` | Laravel 13, PHP 8.5, PostgreSQL 18.7, Redis 8.10.3, Passport (OAuth 2 + PKCE), spatie/permission |
 | Portal | `web/portal` | Next.js 16 (App Router, ISR), Tailwind 4 |
 | Admin | `web/admin` | Vite, React 19, TanStack Query, TipTap |
 | Shared | `packages/` | design tokens, typed API client, OpenAPI types |
@@ -34,10 +39,12 @@ Then open (the `.localhost` names resolve to your machine in modern browsers; no
 | http://api.gd-ecommerce-starter.localhost:30080/docs/api | API reference (Scramble, dev only) |
 | http://localhost:30026 | Mailpit, catches the contact-form mail |
 
+Sample products: `docker compose exec php php artisan db:seed --class="Database\Seeders\Site\SiteCatalogSeeder"`, then post a stock adjustment so they can be bought.
+
 First run only: with `SUPERADMIN_EMAIL`, `SUPERADMIN_PASSWORD` and `OAUTH_ADMIN_REDIRECT_URI` set in `api/.env`, run
 `docker compose exec php php artisan migrate --seed`. Change every `change-me` in `.env`.
 
-The stack: PostgreSQL 18.6 (`postgres`), Redis 8.10.3 (`redis`; cache, sessions, queue, carts, throttles; ACL user `app`), the PHP API (`php`), a queue worker (`php-queue`), a scheduler (`php-scheduler`), `node` (admin and portal dev servers), `nginx` and Mailpit. Both databases listen on 127.0.0.1 only (`DB_PORT`, `REDIS_PORT`).
+The stack: PostgreSQL 18.7 (`postgres`), Redis 8.10.3 (`redis`; cache, sessions, queue, carts, throttles; ACL user `app`), the PHP API (`php`), a queue worker (`php-queue`), a scheduler (`php-scheduler`), `node` (admin and portal dev servers), `nginx` and Mailpit. Both databases listen on 127.0.0.1 only (`DB_PORT`, `REDIS_PORT`).
 
 Optional demo content in English (not part of `DatabaseSeeder`): `docker compose exec php php artisan db:seed --class="Database\Seeders\Site\SiteDataSeeder"`. Logo and favicon are uploaded in the admin under Settings; the built-in ones show until then. Footer credit: Powered by Orvyx Technologies.
 
@@ -50,6 +57,8 @@ Daily commands:
 | `docker compose exec -T php vendor/bin/pint --test` | code style |
 | `docker compose exec -T php vendor/bin/phpstan analyse --memory-limit=1G --no-progress` | Larastan |
 | `docker compose exec -T php composer audit` | dependency advisories |
+| `docker compose exec -T php php artisan stock:verify` | stock ledger, stock levels, purchase orders and receipts agree |
+| `docker compose exec -T php php tests/load/checkout.php` | 50 simultaneous checkouts on one product never oversell (dev only) |
 | `sh scripts/check-versions.sh` | every `*_VERSION` pin in `.env` is listed in docs/VERSIONS.md |
 | `docker compose exec -T postgres psql -U $DB_USERNAME $DB_DATABASE` | open a SQL shell (use the values from `.env`) |
 | `docker compose exec -T nginx nginx -t` | nginx config test |
@@ -79,9 +88,10 @@ keeps PostgreSQL and Redis private and restarts everything on failure. Steps: [d
 |------|-------------|
 | [docs/OVERVIEW.md](docs/OVERVIEW.md) | what the product is, what a client gets, the website pages and admin modules |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | VPS setup, TLS, first deploy, backups, restore |
-| [docs/CUSTOMIZE.md](docs/CUSTOMIZE.md) | brand colours, a second language, new modules and sections |
+| [docs/CUSTOMIZE.md](docs/CUSTOMIZE.md) | theming, payment gateways, couriers, warehouses, new modules and sections |
 | [docs/UPGRADE.md](docs/UPGRADE.md) | updating a running site, rollback |
 | [docs/PATTERNS.md](docs/PATTERNS.md) | the reference code shapes to copy |
+| [docs/PAYMENTS.md](docs/PAYMENTS.md) | how payments work, adding a method or gateway |
 | [docs/ENV.md](docs/ENV.md) | every environment variable |
 | [docs/SECURITY.md](docs/SECURITY.md) | review findings, scans, accessibility and performance results |
 | [docs/DECISIONS.md](docs/DECISIONS.md), [docs/PHASES.md](docs/PHASES.md) | why things are the way they are, what was built when |

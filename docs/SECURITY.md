@@ -1,11 +1,44 @@
-# Security review (phase 15)
+# Security review
 
-Reviewed 2026-11-13 on branch `feature/phase-15-security-a11y-perf`. Status: **fixed** = changed in this phase, **accepted** = documented risk,
-**open** = needs a decision or an action outside this repo.
+Latest first. Status: **fixed** = changed in that phase, **accepted** = documented risk, **open** = needs a decision or work outside the phase.
+Run the gates any time: `php artisan security:routes` and `php artisan stock:verify` (php container), `sh scripts/check-secrets.sh`, `node scripts/check-floors.mjs`.
 
-Run the gates any time: `php artisan security:routes` (php container), `sh scripts/check-secrets.sh`, `node scripts/check-floors.mjs`.
+## Shop review (E14, 2026-11-26)
 
-## Findings
+| # | Area | Finding | Severity | Status | Where |
+|---|------|---------|----------|--------|-------|
+| S1 | Stock integrity | Checkout reserved nothing: the load test had **50 of 50 orders accepted for 20 units**, and 30 could never be confirmed. A cart could also be submitted twice at once | High | fixed: checkout locks the stock rows, a pending order reserves its units, one checkout per cart at a time | `StockService::lock/available`, `tests/load/checkout.php` |
+| S2 | Reservations | A pending order holds stock until staff confirm or cancel it; nothing expires it. A script could hold stock with fake COD orders (limit: 10 checkouts a minute per IP) | Medium | **open**: cancel junk orders in the admin; add an expiry job or captcha if it happens | - |
+| S3 | Price tampering | Prices, discounts, tax, shipping and totals come only from `PricingService`; extra client fields are ignored | - | verified, tested | `ShopHardeningTest` |
+| S4 | Payment webhooks | There is no payment webhook route in v1 (COD only), so there is no signature or replay surface | Info | **open**: the first online gateway must add it by the rules in [PAYMENTS.md](PAYMENTS.md) | - |
+| S5 | Gateway credentials | `encrypted:array`, hidden, write-only in the admin API | - | verified; tested that the stored value is not plain text | `PaymentMethodsAdminTest`, `ShopHardeningTest` |
+| S6 | IDOR | Customer orders are read through the owner's relation; guest lookup needs the 40-character token (constant-time compare, 404 otherwise). There is no address resource in v1 (the address is a snapshot on the order) | - | verified, tested | `CustomerOrderController` |
+| S7 | Rate limits | Signed-in customer routes had none; portal cart, checkout-options and account reads did not forward the visitor's IP, so all visitors shared one bucket | Medium | fixed: `storefront` limiter on customer routes; every proxy route forwards `X-Forwarded-For`. Limits: storefront and tracking 60/min, checkout 10/min, login 10/min per IP and email | `routes/api.php`, `web/portal/app/api` |
+| S8 | Customer tokens | Personal access tokens had Passport's long default lifetime while the portal cookie lasts 7 days | Low | fixed: 7 days | `AppServiceProvider` |
+| S9 | Guard separation | `customer` and `api` guards: a token of one gets 401 on the other | - | verified (`OrdersTest`) | `config/auth.php` |
+| S10 | Registration | "Email already taken" reveals that an account exists (throttled) | Low | accepted | `RegisterCustomerRequest` |
+| S11 | Uploads | Every upload request still validates with the `MediaService` rules, product images included | - | verified | finding 8 |
+| S12 | Audit log | Stock changes were in the ledger but order confirm and cancel recorded no actor; money changes had no history | Medium | fixed: actor on sale movements; append-only `audit_logs` for prices, order and payment status, COD amounts, remittances, coupons, tax rates, delivery fees and payment methods. No admin screen: query it with SQL (DEPLOY.md) | `AuditObserver` |
+| S13 | Integrity | Nothing proved the stock cache matches the ledger | - | fixed: `stock:verify`, run in tests and after the load test | `VerifyStock` |
+| S14 | Redis ACL | `default` off; user `app` without `@dangerous`, RESTORE, DEBUG, MODULE, CONFIG; FLUSHDB re-allowed | - | verified, unchanged | `docker/redis/start.sh` |
+| S15 | Dependencies | Advisories published in November: PHP 8.5.12, PostgreSQL 18.6, nginx 1.30.6, Laravel 13.43.0 (GHSA-c25c-x5r7-2v5m) and Symfony (25 Nov) were all behind | High | fixed: PHP 8.5.13, PostgreSQL 18.7, nginx 1.30.8, Laravel 13.44.1, Symfony 8.1.12 | VERSIONS.md |
+
+### Scans (E14)
+
+`composer audit`, `pnpm audit --prod` and `pnpm audit`: no advisories. Trivy (`aquasec/trivy:latest`, HIGH and CRITICAL):
+
+| Image | Result | Decision |
+|-------|--------|----------|
+| `gd-ecommerce-starter-php:8.5.13` | 0 | fixed: `libxml2` (CVE-2026-86144) upgraded in both PHP Dockerfiles |
+| `redis:8.10.3-alpine`, `nginx:1.30.8-alpine`, `axllent/mailpit:v1.33.1` | 0 | clean |
+| `postgres:18.7-alpine` | `libxml2` 1 HIGH; Go `stdlib` 1.24.6 inside `gosu`, 26 findings including CRITICAL | accepted: the database has no published port and the schema does no XML processing; `gosu` only drops privileges at start. Recheck when the image is rebuilt |
+| `node:24.22.3-alpine` | 6 HIGH in `brace-expansion` and `undici`, both inside the bundled **npm** | accepted: npm never runs at request time; our tree is clean under `pnpm audit` |
+
+## Template review (phase 15)
+
+Reviewed 2026-11-13 on branch `feature/phase-15-security-a11y-perf` of the business-site template (its database was MariaDB then).
+
+### Findings
 
 | # | Area | Finding | Severity | Status | Where |
 |---|------|---------|----------|--------|-------|
@@ -27,7 +60,7 @@ Run the gates any time: `php artisan security:routes` (php container), `sh scrip
 | 16 | Tokens | Access token 1 h, refresh 30 d, password grant refused, PKCE required, memory-only tokens in the SPA, logout revokes both | - | verified (existing tests) | `OauthPkceTest` |
 | 17 | Test isolation | `BilingualTest` assumed `LOCALE_SUPPORTED=en` and failed once the dev `.env` enabled a second language | Low | fixed: `tests/bootstrap.php` pins it | `tests/bootstrap.php` |
 
-## Dependency and image scans
+### Dependency and image scans (phase 15)
 
 Run 2026-11-13. `composer audit`: none. `pnpm audit --prod` and `pnpm audit`: none. Trivy (`aquasec/trivy:latest`, HIGH and CRITICAL, OS and language packages):
 
@@ -43,7 +76,7 @@ Version floors: `node scripts/check-floors.mjs` compares the `.env` image pins, 
 Its first run found `postcss` 8.5.23 (pulled in by Next 16.4.6; floor 8.5.32): fixed with a pnpm `overrides` entry. Advisory check on the web, 2026-11-13: Node 24.22.3 (Nov 2026 release),
 Next 16.4.5 and later (3 Nov 2026 release) and PHP 8.5.12 (21 Oct 2026, PHP2Shell) are current. No nginx 1.30, MariaDB 11.8 or Laravel 13 advisory was found above our floors.
 
-## Accessibility and performance (portal)
+## Accessibility and performance (portal, phase 15)
 
 - axe (WCAG 2.0/2.1 A and AA) through Playwright, `web/portal/e2e/a11y.spec.ts`: home, about, services, blog, contact, privacy, terms and a 404 page in **both languages**, 16 pages, 0 violations.
   The first run found 16 colour-contrast failures (white on `brand-600` is 4.1:1): buttons and active chips now use `brand-700`. The blog detail page is not scanned (no published post in the dev data).

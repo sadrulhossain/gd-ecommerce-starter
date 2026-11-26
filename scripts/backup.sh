@@ -26,7 +26,8 @@ $COMPOSE exec -T php sh -c 'tar -C /var/www/api/storage -cf - oauth-private.key 
 for f in database.sql.gz uploads.tar.gz oauth-keys.tar.gz; do
   gzip -t "$dest/$f" || { echo "backup: $f is corrupt" >&2; exit 1; }
 done
-zcat "$dest/database.sql.gz" | tail -n 1 | grep -q 'PostgreSQL database dump complete' || { echo "backup: database dump did not complete" >&2; exit 1; }
+# pg_dump writes this marker near the end; newer releases add lines after it.
+zcat "$dest/database.sql.gz" | tail -n 10 | grep -q 'PostgreSQL database dump complete' || { echo "backup: database dump did not complete" >&2; exit 1; }
 
 find "$BACKUP_DIR" -mindepth 1 -maxdepth 1 -type d -mtime "+$KEEP_DAYS" -exec rm -rf {} +
 echo "backup: done -> $dest ($(du -sh "$dest" | cut -f1))"

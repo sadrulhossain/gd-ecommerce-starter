@@ -4,9 +4,11 @@ import { apiCall, readCustomerToken, relay, safely } from '../../../lib/customer
 const noCart = () => new Response(JSON.stringify({ message: 'Your cart is empty.', errors: { items: ['Your cart is empty.'] } }), { status: 422, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } })
 
 /** Checkout options: active delivery zones (with fee) and enabled payment methods. Never cached, so an admin change shows at once. */
-export async function GET() {
+export async function GET(request: Request) {
+  const forwardedFor = request.headers.get('x-forwarded-for')
+
   return safely(async () => {
-    const [zones, methods] = await Promise.all([apiCall('GET', '/v1/public/delivery-zones'), apiCall('GET', '/v1/public/payment-methods')])
+    const [zones, methods] = await Promise.all([apiCall('GET', '/v1/public/delivery-zones', { forwardedFor }), apiCall('GET', '/v1/public/payment-methods', { forwardedFor })])
     if (!zones.ok || !methods.ok) return relay(zones.ok ? methods : zones)
 
     return new Response(JSON.stringify({ zones: ((await zones.json()) as { data: unknown }).data, methods: ((await methods.json()) as { data: unknown }).data }), {

@@ -6,7 +6,6 @@ use App\Models\Coupon;
 use App\Models\DeliveryZone;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\StockLevel;
 use App\Models\TaxRate;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
@@ -17,7 +16,7 @@ use Illuminate\Validation\ValidationException;
  */
 class PricingService
 {
-    public function __construct(private readonly CouponService $coupons) {}
+    public function __construct(private readonly CouponService $coupons, private readonly StockService $stock) {}
 
     /**
      * @param  array<int, int>  $items  variant id => quantity
@@ -28,7 +27,7 @@ class PricingService
     public function quote(array $items, bool $strict = false, ?int $zoneId = null, ?string $couponCode = null): array
     {
         $variants = ProductVariant::query()->with('product')->whereIn('id', array_keys($items))->get()->keyBy('id');
-        $stock = StockLevel::query()->whereIn('variant_id', array_keys($items))->pluck('on_hand', 'variant_id');
+        $available = $this->stock->available(array_keys($items));
 
         $lines = [];
         $subtotal = 0;
@@ -40,7 +39,7 @@ class PricingService
             if ($variant !== null && $variant->product === null) {
                 $variant = null; // its product was deleted
             }
-            $issue = $this->issue($variant, $quantity, (int) ($stock[$variantId] ?? 0));
+            $issue = $this->issue($variant, $quantity, $available[$variantId]);
 
             if ($variant === null) {
                 $valid = false;
@@ -176,13 +175,13 @@ class PricingService
         return $fee === null ? (int) config('shop.shipping_flat') : (int) $fee;
     }
 
-    private function issue(?ProductVariant $variant, int $quantity, int $onHand): ?string
+    private function issue(?ProductVariant $variant, int $quantity, int $available): ?string
     {
         if ($variant === null || ! $variant->is_active || $variant->product->status !== Product::ACTIVE
             || ! $variant->product->category()->where('is_active', true)->exists()) {
             return 'This item is no longer available.';
         }
 
-        return $onHand < $quantity ? "Only {$onHand} in stock." : null;
+        return $available < $quantity ? "Only {$available} in stock." : null;
     }
 }
