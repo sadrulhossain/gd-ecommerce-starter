@@ -7,5 +7,5 @@ export async function GET(request: Request) {
 
   const page = Number.parseInt(new URL(request.url).searchParams.get('page') ?? '1', 10)
 
-  return safely(async () => relay(await apiCall('GET', `/v1/customer/orders?page=${Number.isFinite(page) && page > 0 ? page : 1}`, { bearer: token })))
+  return safely(async () => relay(await apiCall('GET', `/v1/customer/orders?page=${Number.isFinite(page) && page > 0 ? page : 1}`, { bearer: token, forwardedFor: request.headers.get('x-forwarded-for') })))
 }

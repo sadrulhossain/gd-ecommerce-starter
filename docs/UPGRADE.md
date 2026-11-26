@@ -1,6 +1,6 @@
 # Upgrade
 
-Two kinds of upgrade: **your site to a newer release of this boilerplate**, and **the pinned software** (PHP, Node, nginx, PostgreSQL, Redis, packages). Both end the same way: back up, deploy, check.
+Two kinds of upgrade: **your site to a newer release of this starter kit**, and **the pinned software** (PHP, Node, nginx, PostgreSQL, Redis, packages). Both end the same way: back up, deploy, check.
 
 ## Before every upgrade
 
@@ -65,7 +65,24 @@ sh scripts/restore.sh backups/<timestamp-before-upgrade>
 
 Migrations in this boilerplate are written to be additive, but a restore is the only guaranteed way back. This is why the backup comes first.
 
-## Updating the boilerplate itself in a fork
+## Merging upstream into a fork
 
-Add the original repository as `upstream`, then `git fetch upstream --tags` and merge a tag (`git merge v1.1.0`). Conflicts are most likely in `docs/`, `packages/tokens/*.css`, `web/portal/messages/*.json` and `DatabaseSeeder.php`.
-Keep your customisations in the files [CUSTOMIZE.md](CUSTOMIZE.md) names, and avoid editing shared code unless you must; that keeps merges small.
+Your shop is a fork of this kit, and the kit is a fork of the business-site template. Merge one level at a time: the kit from its upstream, your shop from the kit.
+
+```sh
+git remote add upstream <url of the repository you forked>
+git remote set-url --push upstream DISABLED     # never push to it by mistake
+git fetch upstream --tags
+git checkout -b upgrade/v1.1.0 main
+git merge v1.1.0                                # merge a release tag, not a moving branch
+```
+
+Then, in this order:
+
+1. Resolve conflicts. Expect them in `docs/`, `packages/tokens/*.css`, `web/portal/messages/*.json`, `DatabaseSeeder.php`, `config/payments.php` and `routes/api.php`. For `api/composer.lock` and `pnpm-lock.yaml` take one side, then run the package manager again.
+2. Never edit a migration that already ran on your site; add a new one. If upstream and you both added migrations, both stay.
+3. Rebuild, run `php artisan migrate`, the CLAUDE.md final check, `php artisan stock:verify`, `php tests/load/checkout.php` and the Playwright suites.
+4. Merge the branch, tag your own release, deploy as above.
+
+Fixes from the business-site template can be merged into the kit the same way, but the kit replaced its database (MariaDB to PostgreSQL) and added Redis: review every database and Docker change by hand.
+Keep your customisations in the files [CUSTOMIZE.md](CUSTOMIZE.md) names; that keeps merges small.

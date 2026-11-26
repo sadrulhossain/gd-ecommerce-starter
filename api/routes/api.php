@@ -107,7 +107,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('customer/register', [CustomerAuthController::class, 'register']);
         Route::post('customer/login', [CustomerAuthController::class, 'login']);
     });
-    Route::middleware('auth:customer')->prefix('customer')->group(function (): void {
+    Route::middleware(['auth:customer', 'throttle:storefront'])->prefix('customer')->group(function (): void {
         Route::get('me', [CustomerAuthController::class, 'me']);
         Route::post('logout', [CustomerAuthController::class, 'logout']);
         Route::get('orders', [CustomerOrderController::class, 'index']);

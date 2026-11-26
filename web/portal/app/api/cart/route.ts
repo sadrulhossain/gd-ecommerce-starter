@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const query = new URLSearchParams()
   for (const key of ['delivery_zone_id', 'coupon_code']) if (params.get(key)) query.set(key, params.get(key)!)
   try {
-    const response = await callApi('GET', `/v1/public/carts/${encodeURIComponent(token)}${query.size ? `?${query}` : ''}`)
+    const response = await callApi('GET', `/v1/public/carts/${encodeURIComponent(token)}${query.size ? `?${query}` : ''}`, undefined, request.headers.get('x-forwarded-for'))
     if (response.status === 404) {
       await clearToken()
 

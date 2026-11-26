@@ -65,9 +65,11 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod exec php php arti
 ```
 
 `--wait` returns when every healthcheck passes (the portal needs its first build, so allow several minutes; follow it with `logs -f portal`). The seeders create the roles and permissions, menus,
-default sections, settings, the superadmin from `.env.prod` and the admin OAuth client. They are idempotent, so running them again is safe; they never overwrite edited content.
+default sections, settings, the superadmin from `.env.prod`, the cash-on-delivery payment method and the admin and storefront OAuth clients. They are idempotent, so running them again is safe; they never overwrite edited content.
 
 Check: `https://example.com` (portal), `https://admin.example.com` (sign in), `https://api.example.com/api/v1/health` (`"status":"ok"`).
+Before the first sale, in the admin: add at least one delivery zone (Delivery), check Payment methods, add tax rates if you charge tax, then add products and receive stock (a goods receipt or a stock adjustment).
+
 Then in the admin: Settings (name, address, phone, email, hours), Sections (visibility and text), and change the superadmin password.
 
 To run the production commands shorter: `alias dcp='docker compose -f docker-compose.prod.yml --env-file .env.prod'`.
@@ -91,6 +93,19 @@ The script checks that the dump is complete and the archives are valid, and fail
 sh scripts/restore.sh backups/20261113-021500     # asks for "yes"; replaces database, uploads and OAuth keys
 ```
 
+### Restore test
+
+Run this after the first backup and after every PostgreSQL upgrade, on a spare server or the dev stack (it replaces the data of the stack it targets):
+
+```sh
+export COMPOSE="docker compose"            # dev stack; omit on a spare production server
+sh scripts/backup.sh
+sh scripts/restore.sh backups/<timestamp>  # type yes
+$COMPOSE exec -T php php artisan stock:verify
+```
+
+It passes when the restore ends with `restore: done`, `stock:verify` says ok, you can sign in, and product images load.
+
 ## 7. Operate
 
 | Task | Command |
@@ -99,6 +114,8 @@ sh scripts/restore.sh backups/20261113-021500     # asks for "yes"; replaces dat
 | Logs | `dcp logs -f --tail 100 nginx portal php` |
 | Restart one service | `dcp restart portal` |
 | Artisan | `dcp exec php php artisan <command>` |
+| Stock integrity | `dcp exec -T php php artisan stock:verify` (exit code 1 and one line per problem; safe to run any time, worth a nightly cron) |
+| Money audit trail | `dcp exec postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "select * from audit_logs order by id desc limit 50"'` |
 | Failed queue jobs | `dcp exec php php artisan queue:failed` |
 | Stop | `dcp down` (volumes stay; never add `-v` unless you mean to delete the data) |
 

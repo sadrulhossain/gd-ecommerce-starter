@@ -37,7 +37,7 @@ export async function POST(request: Request, { params }: Context) {
 }
 
 /** `GET /api/account/me`: the signed-in customer, or `{data: null}` (a dead token is cleared). */
-export async function GET(_request: Request, { params }: Context) {
+export async function GET(request: Request, { params }: Context) {
   const { action } = await params
   if (action !== 'me') return new Response(null, { status: 404 })
 
@@ -45,7 +45,7 @@ export async function GET(_request: Request, { params }: Context) {
     const token = await readCustomerToken()
     if (!token) return new Response(JSON.stringify({ data: null }), { headers: noStore })
 
-    const response = await apiCall('GET', '/v1/customer/me', { bearer: token })
+    const response = await apiCall('GET', '/v1/customer/me', { bearer: token, forwardedFor: request.headers.get('x-forwarded-for') })
     if (response.status === 401) {
       await clearCustomerToken()
 

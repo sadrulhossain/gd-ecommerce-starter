@@ -122,6 +122,13 @@ singleton reference: Settings. Paths below are relative to `api/app` unless note
 - The portal builds on first container start (it needs the API); bump `IMAGE_ID` per release. The php entrypoint migrates and caches config; seeders are run by hand (UPGRADE.md).
 - Backups: `scripts/backup.sh` / `restore.sh`. Anything new that holds state (a volume) must be added to both.
 
+## Integrity and hardening (E14)
+- A pending order reserves its units: `StockService::available()` (on hand minus pending order items) is what can be sold. Anything that claims stock locks first (`StockService::lock()`, inside a transaction), then checks.
+- Money changes are audited by `Observers/AuditObserver` into the append-only `audit_logs` table. A new money field goes into `AuditObserver::AUDITED`; change audited fields through Eloquent models, never a bulk query update. Secret values are never written. Stock is audited by the ledger itself (`created_by`).
+- `php artisan stock:verify` (read-only) checks ledger, levels, running balances, purchase orders and receipts. A new stock-writing document extends it.
+- Load test: `php tests/load/checkout.php` in the php container (50 checkouts on one SKU; dev only). Every portal route handler that calls a throttled API route forwards `x-forwarded-for`.
+- Tests: `tests/Feature/Security/ShopHardeningTest.php`.
+
 ## Catalog (E1)
 - Names: the blog already owns `Category` / `categories`, so shop categories are `ProductCategory` / `product_categories`, route `product-categories`, permissions `product-categories.*`. Brands: `brands.*`; products, variants and images: `products.*` (`products.publish` for publish/unpublish/archive).
 - English only: no `_2nd` columns, no `HasSecondLanguage`, no `Bilingual::rules`.

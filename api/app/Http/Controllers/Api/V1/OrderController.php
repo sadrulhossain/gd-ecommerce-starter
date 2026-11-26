@@ -64,9 +64,9 @@ class OrderController extends Controller
      *
      * pending to confirmed (stock leaves, 422 if short), then packed, shipped, delivered.
      */
-    public function advance(Order $order): OrderResource
+    public function advance(Request $request, Order $order): OrderResource
     {
-        return new OrderResource($this->orders->advance($order));
+        return new OrderResource($this->orders->advance($order, $request->user('api')?->id));
     }
 
     /**
@@ -76,6 +76,6 @@ class OrderController extends Controller
      */
     public function cancel(CancelOrderRequest $request, Order $order): OrderResource
     {
-        return new OrderResource($this->orders->cancel($order, $request->validated('reason')));
+        return new OrderResource($this->orders->cancel($order, $request->validated('reason'), $request->user('api')?->id));
     }
 }

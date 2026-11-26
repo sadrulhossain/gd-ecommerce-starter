@@ -45,7 +45,7 @@ Phases 0-17 above are inherited from the business site (all done). E0-E14 are th
 | [x] | E11 | Portal theme: ecommerce design system | M | ES6 | feature/phase-e11-portal-theme-ecommerce-design-system |
 | [x] | E12 | Portal: shop listing, product page, cart | M | ES7 | feature/phase-e12-portal-shop-product-cart |
 | [x] | E13 | Portal: checkout, account, tracking, SEO | M | ES7 | feature/phase-e13-portal-checkout-account-tracking-seo |
-| [ ] | E14 | Hardening and release | L | ES7 | feature/phase-e14-hardening-release |
+| [x] | E14 | Hardening and release | L | ES7 | feature/phase-e14-hardening-release |
 
 ### E0 notes (done)
 
@@ -63,3 +63,12 @@ Done:
 - [x] Makefile removed; README, ENV, DEPLOY, UPGRADE, SIZING, SECURITY, OVERVIEW updated; English only (`LOCALE_SUPPORTED=en`)
 - [x] Images built; postgres and redis start healthy; dev and prod compose files validate
 - [x] Task 3: `migrate:fresh --seed` clean on PostgreSQL; Redis health, queue and scheduler running; whole Pest suite green (201 tests); final check passed
+
+### E14 notes (done)
+
+- Versions raised to current security releases; composer and pnpm audits clean; Trivy recorded in SECURITY.md
+- Security review (SECURITY.md S1-S15): stock reservation at checkout, double-submit lock, money audit log, customer rate limits and token lifetime
+- `php artisan stock:verify`; `tests/load/checkout.php` (50 buyers, stock 20: 20 accepted, 30 refused); restore test passed in a separate compose project
+- Docs: README, DEPLOY, CUSTOMIZE, UPGRADE, PAYMENTS (new), SECURITY, CHANGELOG
+- After the merge: run the final check on main, then tag `v1.0.0`
+- Planned earlier but not built: payment webhooks and redirect flow, courier adapter interface, warehouses, customer returns, customer addresses, order emails

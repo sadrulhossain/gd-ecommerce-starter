@@ -19,7 +19,7 @@ export async function GET(request: Request, { params }: Context) {
   const token = await readCustomerToken()
   if (!token) return signedOut()
 
-  return safely(async () => relay(await apiCall('GET', `/v1/customer/orders/${encodeURIComponent(number)}`, { bearer: token })))
+  return safely(async () => relay(await apiCall('GET', `/v1/customer/orders/${encodeURIComponent(number)}`, { bearer: token, forwardedFor: request.headers.get('x-forwarded-for') })))
 }
 
 /** Cancel the signed-in customer's own order (the API allows it only while pending). */

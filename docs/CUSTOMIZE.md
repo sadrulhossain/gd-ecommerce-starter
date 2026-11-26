@@ -2,6 +2,11 @@
 
 Everything here is a code change in your fork, then the README checks (Pest, Pint, Larastan, security gates). Content (texts, images, services, posts, hours, section visibility) is edited in the admin, not in code.
 
+## Retheme the portal
+
+The shop is themed in the token layer and nowhere else: `packages/tokens/portal.css` (the inherited tokens) and the portal-scoped `shop` layer that extends it, used only through the E11 components in `web/portal/components`.
+Change token values, not component classes; check the result on `/styleguide` (development only), which shows the components, then run the axe spec. The admin theme is separate ([THEME.md](THEME.md)).
+
 ## Brand colours and fonts
 
 Colours, radii and fonts are design tokens, one file per app, shared through the `@gd/tokens` package:
@@ -39,6 +44,29 @@ The site is bilingual by configuration: one default language and at most one mor
 5. Another pair than English/Bengali: also check `web/portal/lib/i18n.ts` (language names) and the test fixtures that assume `bn`.
 
 To run with one language only, set `LOCALE_SUPPORTED=en`; the switcher and the `/<code>` routes disappear.
+
+## Add a payment gateway
+
+Follow [PAYMENTS.md](PAYMENTS.md). An offline method is one driver class plus one line in `config/payments.php`. The first online gateway also needs the redirect, webhook and unpaid-order work listed there.
+
+## Add a courier
+
+A courier you handle by hand is data: add it in the admin under Delivery. There is **no courier API adapter interface yet**. To call a courier's API, follow the payment pattern:
+
+1. `App\Couriers\CourierAdapter` (for example `book(Delivery)`, `track(Delivery)`), a `CourierManager` as the only caller, and `config/couriers.php` mapping an adapter code to a class.
+2. A new migration adds `adapter` (nullable code) and `credentials` (`encrypted:array`, hidden) to `couriers`; an empty adapter keeps today's manual behaviour.
+3. Book after `DeliveryService::assign()` commits, in a queued job that is idempotent per delivery. The adapter may set `tracking_number`; it never sets `cod_amount` (the server computes it) and moves an order only through `OrderService`.
+4. A courier status webhook follows the webhook rules in PAYMENTS.md (signature, timestamp window, replay key).
+
+## Add a warehouse
+
+v1 has **one implicit warehouse**: stock tables have no `warehouse_id`. A second one is a schema change, not a setting:
+
+1. A new migration: a `warehouses` table with one default row; `warehouse_id` (not null, defaulting to that row) on `stock_levels`, `stock_movements`, `goods_receipts` and `stock_documents`; the key of `stock_levels` becomes `(variant_id, warehouse_id)`.
+2. `StockService` stays the only writer: `apply()`, `count()`, `lock()` and `available()` take a warehouse.
+3. Decide which warehouse an order ships from (the default, or chosen at confirm) and filter or sum `available()` to match.
+4. Transfers are a new draft-then-post document writing both movements in one transaction.
+5. Extend `stock:verify` to group by warehouse and re-run the load test.
 
 ## Add a module (a new managed content type)
 

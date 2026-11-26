@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-/** Places orders and moves them through the lifecycle. Stock leaves at confirm and returns on a later cancel. */
+/**
+ * Places orders and moves them through the lifecycle. A pending order reserves its units (StockService::available());
+ * stock leaves the ledger at confirm and returns on a later cancel.
+ */
 class OrderService
 {
     /** status => statuses it may move to (cancel is separate). */
@@ -38,9 +41,12 @@ class OrderService
     {
         $zoneId = isset($data['delivery_zone_id']) ? (int) $data['delivery_zone_id'] : null;
         $couponCode = isset($data['coupon_code']) ? (string) $data['coupon_code'] : null;
-        $quote = $this->pricing->quote($items, strict: true, zoneId: $zoneId, couponCode: $couponCode);
 
-        return DB::transaction(function () use ($quote, $data, $customer, $zoneId): Order {
+        return DB::transaction(function () use ($items, $data, $customer, $zoneId, $couponCode): Order {
+            // Lock first, then quote: the stock check and the order that claims the stock are one step.
+            $this->stock->lock(array_keys($items));
+            $quote = $this->pricing->quote($items, strict: true, zoneId: $zoneId, couponCode: $couponCode);
+
             $order = new Order;
             $order->forceFill([
                 'number' => Order::nextNumber(),
@@ -92,9 +98,9 @@ class OrderService
         });
     }
 
-    public function advance(Order $order): Order
+    public function advance(Order $order, ?int $userId = null): Order
     {
-        return DB::transaction(function () use ($order): Order {
+        return DB::transaction(function () use ($order, $userId): Order {
             $order = $this->lock($order);
             $next = self::NEXT[$order->status] ?? null;
             if ($next === null) {
@@ -102,8 +108,8 @@ class OrderService
             }
 
             if ($next === Order::CONFIRMED) {
-                foreach ($order->items as $item) {
-                    $this->stock->apply($item->variant_id, StockMovement::SALE, -$item->quantity, $order, null, null, $order->number);
+                foreach ($order->items->sortBy('variant_id') as $item) {
+                    $this->stock->apply($item->variant_id, StockMovement::SALE, -$item->quantity, $order, null, $userId, $order->number);
                 }
             }
 
@@ -126,17 +132,17 @@ class OrderService
         });
     }
 
-    public function cancel(Order $order, ?string $reason): Order
+    public function cancel(Order $order, ?string $reason, ?int $userId = null): Order
     {
-        return DB::transaction(function () use ($order, $reason): Order {
+        return DB::transaction(function () use ($order, $reason, $userId): Order {
             $order = $this->lock($order);
             if (! in_array($order->status, [Order::PENDING, Order::CONFIRMED, Order::PACKED], true)) {
                 throw ValidationException::withMessages(['status' => "A {$order->status} order cannot be cancelled."]);
             }
 
             if ($order->status !== Order::PENDING) {
-                foreach ($order->items as $item) {
-                    $this->stock->apply($item->variant_id, StockMovement::SALE_CANCEL, $item->quantity, $order, null, null, $order->number);
+                foreach ($order->items->sortBy('variant_id') as $item) {
+                    $this->stock->apply($item->variant_id, StockMovement::SALE_CANCEL, $item->quantity, $order, null, $userId, $order->number);
                 }
             }
 

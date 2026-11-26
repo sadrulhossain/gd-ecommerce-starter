@@ -19,6 +19,7 @@ use App\Models\Setting;
 use App\Models\TeamMember;
 use App\Models\Testimonial;
 use App\Models\User;
+use App\Observers\AuditObserver;
 use App\Observers\ContentObserver;
 use App\Policies\RolePolicy;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -49,6 +50,8 @@ class AppServiceProvider extends ServiceProvider
         Passport::authorizationView(fn () => abort(403, 'Only first-party clients are supported.'));
         Passport::tokensExpireIn(now()->addHour());
         Passport::refreshTokensExpireIn(now()->addDays(30));
+        // Only storefront customers get personal access tokens; they live as long as the portal's cookie.
+        Passport::personalAccessTokensExpireIn(now()->addDays(7));
 
         // Public content changes -> queued signed webhook so the portal revalidates its cache.
         foreach ([
@@ -64,6 +67,11 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('storefront', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
         RateLimiter::for('checkout', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('contact', fn (Request $request) => Limit::perMinute(config('contact.per_minute'))->by($request->ip()));
+
+        // Append-only audit trail of money changes (the stock ledger is the audit trail for stock).
+        foreach (array_keys(AuditObserver::AUDITED) as $model) {
+            $model::observe(AuditObserver::class);
+        }
 
         Gate::policy(Role::class, RolePolicy::class);
 
